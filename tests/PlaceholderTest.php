@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace barseghyanartur/ska\Tests;
+namespace barseghyanartur\ska\Tests;
 
-use barseghyanartur/ska\Placeholder;
+use barseghyanartur\ska\Placeholder;
 use PHPUnit\Framework\TestCase;
 
 final class PlaceholderTest extends TestCase
