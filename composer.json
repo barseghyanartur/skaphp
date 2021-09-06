@@ -1,0 +1,47 @@
+{
+    "name": "barseghyanartur/ska",
+    "type": "library",
+    "description": "Sign data using symmetric-key algorithm encryption. Validate signed data and identify possible validation errors. Uses sha-(1, 224, 256, 385 and 512)/hmac for signature encryption. Custom hash algorithms are allowed. Useful shortcut functions for signing (and validating) dictionaries and URLs.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Artur Barseghyan",
+            "email": "artur.barseghyan@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^7.4 || ~8.0.0"
+    },
+    "require-dev": {
+        "phpstan/extension-installer": "^1.1",
+        "phpstan/phpstan": "^0.12.91",
+        "phpstan/phpstan-phpunit": "^0.12.20",
+        "phpstan/phpstan-strict-rules": "^0.12.10",
+        "phpunit/phpunit": "^9.5.6",
+        "psalm/plugin-phpunit": "^0.16.1",
+        "vimeo/psalm": "^4.8.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "barseghyanartur/ska\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "barseghyanartur/ska\\Tests\\": "tests"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "scripts": {
+        "test": [
+            "@phpstan",
+            "@psalm",
+            "@phpunit"
+        ],
+        "phpunit": "vendor/bin/phpunit",
+        "phpstan": "vendor/bin/phpstan analyse",
+        "psalm": "vendor/bin/psalm"
+    }
+}
