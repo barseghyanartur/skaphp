@@ -137,7 +137,7 @@ final class Placeholder
 /**
  * Sample payload
  */
-$json = <<<EOD
+const JSON = <<<EOD
 {
     "order_lines": [{
         "quantity": 4,
@@ -222,6 +222,33 @@ $json = <<<EOD
 }
 EOD;
 
-$payload = json_decode($json, true);
+define("PAYLOAD", json_decode(JSON, true));
 
-print_r($payload);
+print_r(PAYLOAD);
+
+/**
+ * Shared secret
+ */
+const SECRET_KEY = "UxuhnPaO4vKA";
+
+/**
+ * Auth user.
+ */
+const AUTH_USER = "me@example.com";
+
+
+/**
+ * Fields to sign
+ */
+const SIGNATURE_DATA_KEYS = array(
+    "webshop_id",
+    "order_id",
+    "company",
+    "order_lines",
+    "amount",
+    "currency",
+    "user",
+    "shipping",
+    "billing",
+);
+
