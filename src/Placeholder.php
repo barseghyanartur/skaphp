@@ -90,11 +90,9 @@ function sortedURLEncode(array $data, bool $quoted = true): string
  * @param int $lifetime
  * @return string
  */
-function makeValidUntil(int $lifetime=SIGNATURE_LIFETIME): string
-{
-    $validUntil = new Date();
-    $validUntil.setSeconds($validUntil.getSeconds() + $lifetime);
-    return ($validUntil / 1000).toFixed(1);
+function makeValidUntil(int $lifetime = SIGNATURE_LIFETIME): string {
+    $validUntil = time() + $lifetime;
+    return number_format($validUntil, 1, '.', '');
 }
 
 /**
@@ -302,3 +300,8 @@ $sortedSignatureData = dictToOrderedDict($signatureData);
 
 echo("\n === \n sortedSignatureData \n === \n");
 print_r($sortedSignatureData);
+
+$validUntil = makeValidUntil();
+echo("\n === \n validUntil \n === \n");
+print_r($validUntil);
+
