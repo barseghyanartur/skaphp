@@ -3,6 +3,11 @@
 declare(strict_types=1);
 
 //namespace barseghyanartur\ska;
+/**
+ * *******************************************
+ * *************** Constants *****************
+ * *******************************************
+ */
 
 /**
  * Signature lifetime in seconds.
@@ -30,6 +35,12 @@ const DEFAULT_VALID_UNTIL_PARAM = "valid_until";
 const DEFAULT_EXTRA_PARAM = "extra";
 
 /**
+ * *******************************************
+ * *************** Helpers *****************
+ * *******************************************
+ */
+
+/**
  * Dict to ordered dict.
  *
  * @param array $dict
@@ -37,11 +48,14 @@ const DEFAULT_EXTRA_PARAM = "extra";
  */
 function dictToOrderedDict(array $dict): array
 {
-    foreach ($dict as &$value) {
-        if (is_array($value)) dictToOrderedDict($value);
+    $dictCopy = unserialize(serialize($dict));
+    ksort($dictCopy);
+    foreach ($dictCopy as $key => $value) {
+        if (is_array($value)) {
+            $dictCopy[$key] = dictToOrderedDict($value);
+        }
     }
-    ksort($dict);
-    return $dict;
+    return $dictCopy;
 }
 
 /**
@@ -105,7 +119,7 @@ function dictKeys(array $dict, bool $returnString = false): string
  *
  * @param array $data
  * @param array $extra
- * @returns array
+ * @return array
  */
 function extractSignedData(array $data, array $extra): array {
     $dataCopy = unserialize(serialize($data));
@@ -224,8 +238,6 @@ EOD;
 
 define("PAYLOAD", json_decode(JSON, true));
 
-print_r(PAYLOAD);
-
 /**
  * Shared secret
  */
@@ -252,3 +264,41 @@ const SIGNATURE_DATA_KEYS = array(
     "billing",
 );
 
+
+/**
+ * Prepare a dictionary with data to sign.
+ *
+ * @param array $requestData
+ * @return array
+ */
+function getSignatureData(array $requestData): array {
+    $signatureData = array();
+    foreach ($requestData as $key => $value) {
+        if (in_array($key, SIGNATURE_DATA_KEYS)) {
+            $signatureData[$key] = $value;
+        }
+    }
+    return $signatureData;
+}
+
+/**
+ * *******************************************
+ * *************** Usage examples ************
+ * *******************************************
+ */
+
+echo("\n === \n PAYLOAD \n === \n");
+print_r(PAYLOAD);
+
+/**
+ * Signature data
+ */
+$signatureData = getSignatureData(PAYLOAD);
+
+echo("\n === \n signatureData \n === \n");
+print_r($signatureData);
+
+$sortedSignatureData = dictToOrderedDict($signatureData);
+
+echo("\n === \n sortedSignatureData \n === \n");
+print_r($sortedSignatureData);
