@@ -69,9 +69,9 @@ function sortedURLEncode(array $data, bool $quoted = true): string
 {
     $orderedData = dictToOrderedDict($data);
     $_sorted = [];
-    foreach ( $orderedData as $key => $value) {
+    foreach ($orderedData as $key => $value) {
         if (is_array($value)) {
-            $_sorted[] = "$key={${json_encode($value)}}";
+            $_sorted[] = '"'.$key.'='.json_encode($value).'"';
         } else {
             $_sorted[] = "${key}=${value}";
         }
@@ -440,3 +440,17 @@ $base2 = getBase(
 );
 echo("\n === \n base2 \n === \n");
 print_r($base2);
+
+$encodedData = sortedURLEncode($signatureData);
+echo("\n === \n encodedData \n === \n");
+print_r($encodedData);
+
+$encodedData2 = sortedURLEncode($signatureData, $quoted=false);
+echo("\n === \n encodedData2 \n === \n");
+print_r($encodedData2);
+
+$orderedPayload = dictToOrderedDict(PAYLOAD);
+echo("\n === \n orderedPayload \n === \n");
+print_r($orderedPayload);
+
+echo("\n");
