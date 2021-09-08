@@ -10,7 +10,9 @@
         }
     ],
     "require": {
-        "php": "^7.4 || ~8.0.0"
+        "php": "^7.4 || ~8.0.0",
+        "ext-json": "*",
+        "ext-xdebug": "*"
     },
     "require-dev": {
         "phpstan/extension-installer": "^1.1",
