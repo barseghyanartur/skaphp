@@ -240,6 +240,44 @@ function makeHash(string $authUser, string $secretKey, $validUntil = null, array
     return hash_hmac("sha1", $_base, $secretKey);
 }
 
+/**
+ * Generate signature.
+ *
+ * @param string $authUser
+ * @param string $secretKey
+ * @param string|int|float $validUntil
+ * @param int $lifetime
+ * @param array|null $extra
+ * @return null|Signature
+ */
+function generateSignature(
+    string $authUser,
+    string $secretKey,
+    $validUntil = null,
+    int $lifetime = SIGNATURE_LIFETIME,
+    array $extra = null
+): ?Signature
+{
+    if (!$extra) {
+        $extra = array();
+    }
+
+    if (!$validUntil) {
+        $validUntil = makeValidUntil($lifetime);
+    } else {
+        try {
+            unixTimestampToDate($validUntil);
+        } catch (Exception $err) {
+            return null;
+        }
+    }
+
+    $hash = makeHash($authUser, $secretKey, $validUntil, $extra);
+
+    $signature = base64_encode(utf8_encode($hash));
+
+    return new Signature($signature, $authUser, $validUntil, $extra);
+}
 
 final class Placeholder
 {
@@ -502,5 +540,36 @@ $hash3 = makeHash(
 );
 echo("\n === \n hash3 \n === \n");
 print_r($hash3);
+
+
+$signature = generateSignature(
+    $authUser=AUTH_USER,
+    $secretKey=SECRET_KEY,
+    $validUntil,
+    $lifetime=SIGNATURE_LIFETIME,
+    $extra=null,
+);
+echo("\n === \n signature \n === \n");
+print_r($signature);
+
+$signature2 = generateSignature(
+    $authUser=AUTH_USER,
+    $secretKey=SECRET_KEY,
+    $validUntil,
+    $lifetime=SIGNATURE_LIFETIME,
+    $extra=["1"=>"1", "2"=>"2"]
+);
+echo("\n === \n signature2 \n === \n");
+print_r($signature2);
+
+$signature3 = generateSignature(
+    $authUser=AUTH_USER,
+    $secretKey=SECRET_KEY,
+    $validUntil,
+    $lifetime=SIGNATURE_LIFETIME,
+    $extra=$signatureData
+);
+echo("\n === \n signature3 \n === \n");
+print_r($signature3);
 
 echo("\n");
