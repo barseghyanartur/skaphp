@@ -165,7 +165,7 @@ class Signature {
      */
     public function isExpired() {
         $now = new Date();
-        $validUntil = unixTimestampToDate(this.validUntil);
+        $validUntil = unixTimestampToDate($this->validUntil);
         $res = $validUntil > $now;
         return !$res;
     }
@@ -194,7 +194,6 @@ function unixTimestampToDate($validUntil)
     return DateTime::createFromFormat('U.u', normalizeUnixTimestamp($validUntil));
 }
 
-
 /**
  * Make a secret key.
  *
@@ -221,6 +220,26 @@ function getBase(string $authUser, $validUntil, array $extra = null) {
 
     return implode("_", $_base);
 }
+
+/**
+ * Make hash.
+ *
+ * @param string $authUser
+ * @param string $secretKey
+ * @param string|int|float $validUntil
+ * @param array|null extra
+ * @return string
+ */
+function makeHash(string $authUser, string $secretKey, $validUntil = null, array $extra = null): string
+{
+    if (!$extra) {
+        $extra = array();
+    }
+
+    $_base = getBase($authUser, $validUntil, $extra);
+    return hash_hmac("sha1", $_base, $secretKey);
+}
+
 
 final class Placeholder
 {
@@ -393,7 +412,11 @@ $sortedSignatureData = dictToOrderedDict($signatureData);
 echo("\n === \n sortedSignatureData \n === \n");
 print_r($sortedSignatureData);
 
-$validUntil = makeValidUntil();
+$validUntil0 = makeValidUntil();
+echo("\n === \n validUntil0 \n === \n");
+print_r($validUntil0);
+
+$validUntil = normalizeUnixTimestamp(1628717009.0);
 echo("\n === \n validUntil \n === \n");
 print_r($validUntil);
 
@@ -452,5 +475,32 @@ print_r($encodedData2);
 $orderedPayload = dictToOrderedDict(PAYLOAD);
 echo("\n === \n orderedPayload \n === \n");
 print_r($orderedPayload);
+
+$hash = makeHash(
+    $authUser=AUTH_USER,
+    $secretKey=SECRET_KEY,
+    $validUntil,
+    $extra=$sortedSignatureData,
+);
+echo("\n === \n hash \n === \n");
+print_r($hash);
+
+$hash2 = makeHash(
+    $authUser=AUTH_USER,
+    $secretKey=SECRET_KEY,
+    $validUntil,
+    $extra=null,
+);
+echo("\n === \n hash2 \n === \n");
+print_r($hash2);
+
+$hash3 = makeHash(
+    $authUser=AUTH_USER,
+    $secretKey=SECRET_KEY,
+    $validUntil,
+    $extra=["1"=>"1", "2"=>"2"],
+);
+echo("\n === \n hash3 \n === \n");
+print_r($hash3);
 
 echo("\n");
