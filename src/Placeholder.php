@@ -72,7 +72,6 @@ function sortedURLEncode(array $data, bool $quoted = true): string
     foreach ( $orderedData as $key => $value) {
         if (is_array($value)) {
             $_sorted[] = "$key={${json_encode($value)}}";
-//            $_sorted[] = "$key={${json_encode($value)}}";
         } else {
             $_sorted[] = "${key}=${value}";
         }
@@ -102,7 +101,7 @@ function makeValidUntil(int $lifetime = SIGNATURE_LIFETIME): string {
  * @param bool returnString
  * @return string|string[]
  */
-function dictKeys(array $dict, bool $returnString = false): string
+function dictKeys(array $dict, bool $returnString = false)
 {
     $keys = array_keys($dict);
     sort($keys);
@@ -122,13 +121,55 @@ function dictKeys(array $dict, bool $returnString = false): string
 function extractSignedData(array $data, array $extra): array {
     $dataCopy = unserialize(serialize($data));
     foreach ($dataCopy as $key=> $value) {
-        if ($extra.indexOf(key) < 0) {
+        if (in_array($key, $extra)) {
             unset($dataCopy[$key]);
         }
     }
     return $dataCopy;
 }
 
+/**
+ * *******************************************
+ * ****************** Base *******************
+ * *******************************************
+ */
+
+/**
+ * Signature.
+ */
+class Signature {
+    private string $signature;
+    private string $authUser;
+    private string $validUntil;
+    private array $extra;
+
+    /**
+     * Constructor.
+     *
+     * @param string signature
+     * @param string authUser
+     * @param string|int|float validUntil
+     * @param array extra
+     */
+    public function __construct(string $signature, string $authUser, string $validUntil, array $extra) {
+        $this->signature = $signature;
+        $this->authUser = $authUser;
+        $this->validUntil = $validUntil;
+        $this->extra = $extra ? $extra : array();
+    }
+
+    /**
+     * Check if signature is expired.
+     *
+     * @return boolean
+     */
+    public function isExpired() {
+        $now = new Date();
+        $validUntil = unixTimestampToDate(this.validUntil);
+        $res = $validUntil > $now;
+        return !$res;
+    }
+}
 
 final class Placeholder
 {
@@ -305,3 +346,7 @@ $validUntil = makeValidUntil();
 echo("\n === \n validUntil \n === \n");
 print_r($validUntil);
 
+
+$keys = dictKeys(PAYLOAD);
+echo("\n === \n keys \n === \n");
+print_r($keys);
