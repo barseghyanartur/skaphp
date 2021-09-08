@@ -78,7 +78,7 @@ function sortedURLEncode(array $data, bool $quoted = true): string
     }
     $_res = implode("&", $_sorted);
     if ($quoted) {
-        $_res = urlencode(_res);
+        $_res = urlencode($_res);
     }
     return $_res;
 }
@@ -178,6 +178,11 @@ class Signature {
  * *******************************************
  */
 
+function normalizeUnixTimestamp($timestamp)
+{
+    return sprintf("%01.1f", $timestamp);
+}
+
 /**
  * Convert unix timestamp to date.
  *
@@ -186,10 +191,35 @@ class Signature {
  */
 function unixTimestampToDate($validUntil)
 {
-    if (is_float($validUntil)) {
-        $validUntil = sprintf("%01.1f", $validUntil);
+    return DateTime::createFromFormat('U.u', normalizeUnixTimestamp($validUntil));
+}
+
+
+/**
+ * Make a secret key.
+ *
+ * @param string $authUser
+ * @param string|int|float $validUntil
+ * @param array|null $extra
+ * @return string
+ */
+function getBase(string $authUser, $validUntil, array $extra = null) {
+    if (!$extra) {
+        $extra = array();
     }
-    return DateTime::createFromFormat('U.u', $validUntil);
+
+    $validUntil = normalizeUnixTimestamp($validUntil);
+
+    $_base = [$validUntil, $authUser];
+
+    if ($extra) {
+        $urlencodedExtra = sortedURLEncode($extra);
+        if ($urlencodedExtra) {
+            $_base[] = $urlencodedExtra;
+        }
+    }
+
+    return implode("_", $_base);
 }
 
 final class Placeholder
@@ -394,3 +424,19 @@ $validUntil5 = '1629418639.1';
 $dateFromUnitTimestamp5 = unixTimestampToDate($validUntil5);
 echo("\n === \n dateFromUnitTimestamp5 \n === \n");
 print_r($dateFromUnitTimestamp5);
+
+$base = getBase(
+    $authUser=AUTH_USER,
+    $validUntil,
+    $extra=null,
+);
+echo("\n === \n base \n === \n");
+print_r($base);
+
+$base2 = getBase(
+    $authUser=AUTH_USER,
+    $validUntil,
+    $extra=["1" => "1", "2" => "2"],
+);
+echo("\n === \n base2 \n === \n");
+print_r($base2);
