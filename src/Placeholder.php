@@ -182,11 +182,14 @@ class Signature {
  * Convert unix timestamp to date.
  *
  * @param string|float|number validUntil
- * @return DateTime|false
+ * @return DateTime
  */
 function unixTimestampToDate($validUntil)
 {
-    return DateTime::createFromFormat('U', strval($validUntil));
+    if (is_float($validUntil)) {
+        $validUntil = sprintf("%01.1f", $validUntil);
+    }
+    return DateTime::createFromFormat('U.u', $validUntil);
 }
 
 final class Placeholder
@@ -376,3 +379,18 @@ $validUntil2 = 1631087737.0;
 $dateFromUnitTimestamp2 = unixTimestampToDate($validUntil2);
 echo("\n === \n dateFromUnitTimestamp2 \n === \n");
 print_r($dateFromUnitTimestamp2);
+
+$validUntil3 = '1631087737.0';
+$dateFromUnitTimestamp3 = unixTimestampToDate($validUntil3);
+echo("\n === \n dateFromUnitTimestamp3 \n === \n");
+print_r($dateFromUnitTimestamp3);
+
+$validUntil4 = 1629418639.1;
+$dateFromUnitTimestamp4 = unixTimestampToDate($validUntil4);
+echo("\n === \n dateFromUnitTimestamp4 \n === \n");
+print_r($dateFromUnitTimestamp4);
+
+$validUntil5 = '1629418639.1';
+$dateFromUnitTimestamp5 = unixTimestampToDate($validUntil5);
+echo("\n === \n dateFromUnitTimestamp5 \n === \n");
+print_r($dateFromUnitTimestamp5);
