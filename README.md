@@ -9,7 +9,7 @@ validating) dictionaries and URLs.
 ## Prerequisites
 
 ```shell
-sudo dnf install php php-json
+sudo dnf install php php-json php-xdebug php-pear
 ```
 
 ## Installation

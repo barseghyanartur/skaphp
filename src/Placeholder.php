@@ -171,6 +171,24 @@ class Signature {
     }
 }
 
+
+/**
+ * *******************************************
+ * ************* Borrowed from classes *******
+ * *******************************************
+ */
+
+/**
+ * Convert unix timestamp to date.
+ *
+ * @param string|float|number validUntil
+ * @return DateTime|false
+ */
+function unixTimestampToDate($validUntil)
+{
+    return DateTime::createFromFormat('U', strval($validUntil));
+}
+
 final class Placeholder
 {
     private string $prefix;
@@ -346,7 +364,15 @@ $validUntil = makeValidUntil();
 echo("\n === \n validUntil \n === \n");
 print_r($validUntil);
 
-
 $keys = dictKeys(PAYLOAD);
 echo("\n === \n keys \n === \n");
 print_r($keys);
+
+$dateFromUnitTimestamp = unixTimestampToDate($validUntil);
+echo("\n === \n dateFromUnitTimestamp \n === \n");
+print_r($dateFromUnitTimestamp);
+
+$validUntil2 = 1631087737.0;
+$dateFromUnitTimestamp2 = unixTimestampToDate($validUntil2);
+echo("\n === \n dateFromUnitTimestamp2 \n === \n");
+print_r($dateFromUnitTimestamp2);
