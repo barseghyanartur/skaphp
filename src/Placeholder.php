@@ -151,10 +151,10 @@ function extractSignedData(array $data, array $extra): array {
  * Signature.
  */
 class Signature {
-    private string $signature;
-    private string $authUser;
-    private string $validUntil;
-    private array $extra;
+    public string $signature;
+    public string $authUser;
+    public string $validUntil;
+    public array $extra;
 
     /**
      * Constructor.
@@ -184,6 +184,134 @@ class Signature {
     }
 }
 
+/**
+ * Validate signature.
+ *
+ * @param string $signature
+ * @param string $authUser
+ * @param string $secretKey
+ * @param string|int|float $validUntil
+ * @param array|null $extra
+ * @param bool $returnObject
+ * @return bool
+ */
+function validateSignature(
+    string $signature,
+    string $authUser,
+    string $secretKey,
+    $validUntil,
+    array $extra = null,
+    bool $returnObject = false
+): bool {
+    if (!$extra) {
+        $extra = array();
+    }
+
+    $sig = generateSignature(
+        $authUser,
+        $secretKey,
+        $validUntil,
+        SIGNATURE_LIFETIME,
+        $extra,
+    );
+
+    if (!$returnObject) {
+        return $sig->signature === $signature && !$sig->isExpired();
+    }
+}
+
+/**
+ * *******************************************
+ * ****************** Utils ******************
+ * *******************************************
+ */
+
+/**
+ * Request helper.
+ */
+class RequestHelper {
+    /**
+     * @var string
+     */
+    public string $signatureParam;
+    /**
+     * @var string
+     */
+    public string $authUserParam;
+    /**
+     * @var string
+     */
+    public string $validUntilParam;
+    /**
+     * @var string
+     */
+    public string $extraParam;
+
+    /**
+     * Constructor.
+     *
+     * @param string $signatureParam
+     * @param string $authUserParam
+     * @param string $validUntilParam
+     * @param string $extraParam
+     */
+    public function __construct(
+        string $signatureParam = DEFAULT_SIGNATURE_PARAM,
+        string $authUserParam = DEFAULT_AUTH_USER_PARAM,
+        string $validUntilParam = DEFAULT_VALID_UNTIL_PARAM,
+        string $extraParam = DEFAULT_EXTRA_PARAM
+    ) {
+        $this->signatureParam = $signatureParam;
+        $this->authUserParam = $authUserParam;
+        $this->validUntilParam = $validUntilParam;
+        $this->extraParam = $extraParam;
+    }
+
+    /**
+     * Signature to dict.
+     *
+     * @param Signature $signature
+     * @return array
+     */
+    public function signatureToDict(Signature $signature): array
+    {
+        $data = array();
+
+        $data[$this->signatureParam] = $signature.signature;
+        $data[$this->authUserParam] = $signature.authUser;
+        $data[$this->validUntilParam] = $signature.validUntil;
+        $data[$this->extraParam] = dictKeys($signature.extra, true);
+
+        return array_merge($data, $signature.extra);
+    }
+
+    /**
+     * Validate request data.
+     *
+     * @param array data
+     * @param string secretKey
+     */
+    public function validateRequestData($data, $secretKey): bool
+    {
+        $signature = $data[$this->signatureParam];
+        $authUser = $data[$this->authUserParam];
+        $validUntil = $data[$this->validUntilParam];
+        $_extra = $data[$this->extraParam];
+        $extraData = array();
+        if ($_extra) {
+            $_extra = $_extra.split(",");
+            $extraData = extractSignedData($data, $_extra);
+        }
+
+        return validateSignature(
+            $signature,
+            $authUser,
+            $secretKey,
+            $validUntil,
+            $extraData,
+        );
+    }
+}
 
 /**
  * *******************************************
