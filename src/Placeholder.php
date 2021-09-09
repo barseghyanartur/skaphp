@@ -277,12 +277,12 @@ class RequestHelper {
     {
         $data = array();
 
-        $data[$this->signatureParam] = $signature.signature;
-        $data[$this->authUserParam] = $signature.authUser;
-        $data[$this->validUntilParam] = $signature.validUntil;
-        $data[$this->extraParam] = dictKeys($signature.extra, true);
+        $data[$this->signatureParam] = $signature->signature;
+        $data[$this->authUserParam] = $signature->authUser;
+        $data[$this->validUntilParam] = $signature->validUntil;
+        $data[$this->extraParam] = dictKeys($signature->extra, true);
 
-        return array_merge($data, $signature.extra);
+        return array_merge($data, $signature->extra);
     }
 
     /**
@@ -791,5 +791,29 @@ $signature3 = generateSignature(
 );
 echo("\n === \n signature3 \n === \n");
 print_r($signature3);
+
+$signatureDict = signatureToDict(
+    PAYLOAD["webshop_id"],
+    SECRET_KEY,
+    $validUntil,
+    SIGNATURE_LIFETIME,
+    $signatureData,
+    DEFAULT_SIGNATURE_PARAM,
+    "webshop_id",
+);
+echo("\n === \n signatureDict \n === \n");
+print_r($signatureDict);
+
+$signatureDict2 = signatureToDict(
+    PAYLOAD["webshop_id"],
+    SECRET_KEY,
+    $validUntil,
+    SIGNATURE_LIFETIME,
+    ["1" => "1", "2" => "2"],
+    DEFAULT_SIGNATURE_PARAM,
+    $authUserParam="webshop_id",
+);
+echo("\n === \n signatureDict2 \n === \n");
+print_r($signatureDict2);
 
 echo("\n");
