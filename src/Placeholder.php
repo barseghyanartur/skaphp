@@ -1,8 +1,12 @@
 <?php
-
 declare(strict_types=1);
 
-//namespace barseghyanartur\ska;
+
+namespace barseghyanartur\ska;
+
+use DateTime;
+use Exception;
+
 /**
  * *******************************************
  * *************** Constants *****************
@@ -41,6 +45,18 @@ const DEFAULT_EXTRA_PARAM = "extra";
  */
 
 /**
+ * Encode URL components.
+ *
+ * @param string $str
+ * @return string
+ */
+function encodeURIComponent(string $str): string
+{
+    $revert = array('%21'=>'!', '%2A'=>'*', '%27'=>"'", '%28'=>'(', '%29'=>')');
+    return strtr(rawurlencode($str), $revert);
+}
+
+/**
  * Dict to ordered dict.
  *
  * @param array $dict
@@ -71,14 +87,15 @@ function sortedURLEncode(array $data, bool $quoted = true): string
     $_sorted = [];
     foreach ($orderedData as $key => $value) {
         if (is_array($value)) {
-            $_sorted[] = '"'.$key.'='.json_encode($value).'"';
+            $_sorted[] = $key.'='.json_encode($value, JSON_UNESCAPED_SLASHES);
         } else {
-            $_sorted[] = "${key}=${value}";
+            $_sorted[] = $key.'='.$value;
         }
     }
     $_res = implode("&", $_sorted);
     if ($quoted) {
-        $_res = urlencode($_res);
+//        $_res = urlencode($_res);
+        $_res = encodeURIComponent($_res);
     }
     return $_res;
 }
@@ -138,10 +155,10 @@ function extractSignedData(array $data, array $extra): array {
  * Signature.
  */
 class Signature {
-    private string $signature;
-    private string $authUser;
-    private string $validUntil;
-    private array $extra;
+    public string $signature;
+    public string $authUser;
+    public string $validUntil;
+    public array $extra;
 
     /**
      * Constructor.
@@ -161,16 +178,145 @@ class Signature {
     /**
      * Check if signature is expired.
      *
-     * @return boolean
+     * @return bool
      */
-    public function isExpired() {
-        $now = new Date();
+    public function isExpired(): bool
+    {
+        $now = new DateTime();
         $validUntil = unixTimestampToDate($this->validUntil);
         $res = $validUntil > $now;
         return !$res;
     }
 }
 
+/**
+ * Validate signature.
+ *
+ * @param string $signature
+ * @param string $authUser
+ * @param string $secretKey
+ * @param string|int|float $validUntil
+ * @param array|null $extra
+ * @param bool $returnObject
+ * @return bool
+ */
+function validateSignature(
+    string $signature,
+    string $authUser,
+    string $secretKey,
+    $validUntil,
+    array $extra = null,
+    bool $returnObject = false
+): bool {
+    if (!$extra) {
+        $extra = array();
+    }
+
+    $sig = generateSignature(
+        $authUser,
+        $secretKey,
+        $validUntil,
+        SIGNATURE_LIFETIME,
+        $extra,
+    );
+
+    if (!$returnObject) {
+        return $sig->signature === $signature && !$sig->isExpired();
+    }
+}
+
+/**
+ * *******************************************
+ * ****************** Utils ******************
+ * *******************************************
+ */
+
+/**
+ * Request helper.
+ */
+class RequestHelper {
+    /**
+     * @var string
+     */
+    public string $signatureParam;
+    /**
+     * @var string
+     */
+    public string $authUserParam;
+    /**
+     * @var string
+     */
+    public string $validUntilParam;
+    /**
+     * @var string
+     */
+    public string $extraParam;
+
+    /**
+     * Constructor.
+     *
+     * @param string $signatureParam
+     * @param string $authUserParam
+     * @param string $validUntilParam
+     * @param string $extraParam
+     */
+    public function __construct(
+        string $signatureParam = DEFAULT_SIGNATURE_PARAM,
+        string $authUserParam = DEFAULT_AUTH_USER_PARAM,
+        string $validUntilParam = DEFAULT_VALID_UNTIL_PARAM,
+        string $extraParam = DEFAULT_EXTRA_PARAM
+    ) {
+        $this->signatureParam = $signatureParam;
+        $this->authUserParam = $authUserParam;
+        $this->validUntilParam = $validUntilParam;
+        $this->extraParam = $extraParam;
+    }
+
+    /**
+     * Signature to dict.
+     *
+     * @param Signature $signature
+     * @return array
+     */
+    public function signatureToDict(Signature $signature): array
+    {
+        $data = array();
+
+        $data[$this->signatureParam] = $signature->signature;
+        $data[$this->authUserParam] = $signature->authUser;
+        $data[$this->validUntilParam] = $signature->validUntil;
+        $data[$this->extraParam] = dictKeys($signature->extra, true);
+
+        return array_merge($data, $signature->extra);
+    }
+
+    /**
+     * Validate request data.
+     *
+     * @param array data
+     * @param string secretKey
+     */
+    public function validateRequestData($data, $secretKey): bool
+    {
+        $signature = $data[$this->signatureParam];
+        $authUser = $data[$this->authUserParam];
+        $validUntil = $data[$this->validUntilParam];
+        $_extra = $data[$this->extraParam];
+        $extraData = array();
+        if ($_extra) {
+            $_extra = explode(",", $_extra);
+            $extraData = extractSignedData($data, $_extra);
+        }
+
+        return validateSignature(
+            $signature,
+            $authUser,
+            $secretKey,
+            $validUntil,
+            $extraData,
+        );
+    }
+}
 
 /**
  * *******************************************
@@ -237,9 +383,123 @@ function makeHash(string $authUser, string $secretKey, $validUntil = null, array
     }
 
     $_base = getBase($authUser, $validUntil, $extra);
-    return hash_hmac("sha1", $_base, $secretKey);
+    return hash_hmac("sha1", $_base, $secretKey, true);
 }
 
+/**
+ * Generate signature.
+ *
+ * @param string $authUser
+ * @param string $secretKey
+ * @param string|int|float $validUntil
+ * @param int $lifetime
+ * @param array|null $extra
+ * @return null|Signature
+ */
+function generateSignature(
+    string $authUser,
+    string $secretKey,
+    $validUntil = null,
+    int $lifetime = SIGNATURE_LIFETIME,
+    array $extra = null
+): ?Signature
+{
+    if (!$extra) {
+        $extra = array();
+    }
+
+    if (!$validUntil) {
+        $validUntil = makeValidUntil($lifetime);
+    } else {
+        try {
+            unixTimestampToDate($validUntil);
+        } catch (Exception $err) {
+            return null;
+        }
+    }
+
+    $hash = makeHash($authUser, $secretKey, $validUntil, $extra);
+    $signature = base64_encode($hash);
+
+    return new Signature($signature, $authUser, $validUntil, $extra);
+}
+
+/**
+ * Signature to dict.
+ *
+ * @param string $authUser
+ * @param string $secretKey
+ * @param string|int|float|null $validUntil
+ * @param int|float $lifetime
+ * @param array|null $extra
+ * @param string $signatureParam
+ * @param string $authUserParam
+ * @param string $validUntilParam
+ * @param string $extraParam
+ * @return array
+ */
+function signatureToDict(
+    string $authUser,
+    string $secretKey,
+    $validUntil = null,
+    $lifetime = SIGNATURE_LIFETIME,
+    array $extra = null,
+    string $signatureParam = DEFAULT_SIGNATURE_PARAM,
+    string $authUserParam = DEFAULT_AUTH_USER_PARAM,
+    string $validUntilParam = DEFAULT_VALID_UNTIL_PARAM,
+    string $extraParam = DEFAULT_EXTRA_PARAM
+): array
+{
+    $signature = generateSignature(
+        $authUser,
+        $secretKey,
+        $validUntil,
+        $lifetime,
+        $extra,
+    );
+
+    $requestHelper = new RequestHelper(
+        $signatureParam,
+        $authUserParam,
+        $validUntilParam,
+        $extraParam,
+    );
+
+    return $requestHelper->signatureToDict($signature);
+}
+
+/**
+ * Validate signed request data.
+ *
+ * @param array $data
+ * @param string $secretKey
+ * @param string $signatureParam
+ * @param string $authUserParam
+ * @param string $validUntilParam
+ * @param string $extraParam
+ * @param bool $validate
+ * @param bool $failSilently
+ * @return bool
+ */
+function validateSignedRequestData(
+    array $data,
+    string $secretKey,
+    string $signatureParam = DEFAULT_SIGNATURE_PARAM,
+    string $authUserParam = DEFAULT_AUTH_USER_PARAM,
+    string $validUntilParam = DEFAULT_VALID_UNTIL_PARAM,
+    string $extraParam = DEFAULT_EXTRA_PARAM,
+    bool $validate = false,
+    bool $failSilently = false
+) {
+    $requestHelper = new RequestHelper(
+        $signatureParam,
+        $authUserParam,
+        $validUntilParam,
+        $extraParam
+    );
+
+    return $requestHelper->validateRequestData($data, $secretKey);
+}
 
 final class Placeholder
 {
@@ -502,5 +762,60 @@ $hash3 = makeHash(
 );
 echo("\n === \n hash3 \n === \n");
 print_r($hash3);
+
+
+$signature = generateSignature(
+    $authUser=AUTH_USER,
+    $secretKey=SECRET_KEY,
+    $validUntil,
+    $lifetime=SIGNATURE_LIFETIME,
+    $extra=null,
+);
+echo("\n === \n signature \n === \n");
+print_r($signature);
+
+$signature2 = generateSignature(
+    $authUser=AUTH_USER,
+    $secretKey=SECRET_KEY,
+    $validUntil,
+    $lifetime=SIGNATURE_LIFETIME,
+    $extra=["1"=>"1", "2"=>"2"]
+);
+echo("\n === \n signature2 \n === \n");
+print_r($signature2);
+
+$signature3 = generateSignature(
+    $authUser=AUTH_USER,
+    $secretKey=SECRET_KEY,
+    $validUntil,
+    $lifetime=SIGNATURE_LIFETIME,
+    $extra=$signatureData
+);
+echo("\n === \n signature3 \n === \n");
+print_r($signature3);
+
+$signatureDict = signatureToDict(
+    PAYLOAD["webshop_id"],
+    SECRET_KEY,
+    $validUntil,
+    SIGNATURE_LIFETIME,
+    $signatureData,
+    DEFAULT_SIGNATURE_PARAM,
+    "webshop_id",
+);
+echo("\n === \n signatureDict \n === \n");
+print_r($signatureDict);
+
+$signatureDict2 = signatureToDict(
+    PAYLOAD["webshop_id"],
+    SECRET_KEY,
+    $validUntil,
+    SIGNATURE_LIFETIME,
+    ["1" => "1", "2" => "2"],
+    DEFAULT_SIGNATURE_PARAM,
+    $authUserParam="webshop_id",
+);
+echo("\n === \n signatureDict2 \n === \n");
+print_r($signatureDict2);
 
 echo("\n");
