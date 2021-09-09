@@ -237,7 +237,7 @@ function makeHash(string $authUser, string $secretKey, $validUntil = null, array
     }
 
     $_base = getBase($authUser, $validUntil, $extra);
-    return hash_hmac("sha1", $_base, $secretKey);
+    return hash_hmac("sha1", $_base, $secretKey, true);
 }
 
 /**
@@ -273,8 +273,10 @@ function generateSignature(
     }
 
     $hash = makeHash($authUser, $secretKey, $validUntil, $extra);
-
-    $signature = base64_encode(utf8_encode($hash));
+//    echo("----------------------- hash ----------------------\n");
+//    print_r($hash);
+//    echo("\n");
+    $signature = base64_encode($hash);
 
     return new Signature($signature, $authUser, $validUntil, $extra);
 }
