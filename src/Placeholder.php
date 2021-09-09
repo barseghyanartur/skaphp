@@ -299,7 +299,7 @@ class RequestHelper {
         $_extra = $data[$this->extraParam];
         $extraData = array();
         if ($_extra) {
-            $_extra = $_extra.split(",");
+            $_extra = explode(",", $_extra);
             $extraData = extractSignedData($data, $_extra);
         }
 
@@ -420,6 +420,83 @@ function generateSignature(
     $signature = base64_encode($hash);
 
     return new Signature($signature, $authUser, $validUntil, $extra);
+}
+
+/**
+ * Signature to dict.
+ *
+ * @param string $authUser
+ * @param string $secretKey
+ * @param string|int|float|null $validUntil
+ * @param int|float $lifetime
+ * @param array|null $extra
+ * @param string $signatureParam
+ * @param string $authUserParam
+ * @param string $validUntilParam
+ * @param string $extraParam
+ * @return array
+ */
+function signatureToDict(
+    string $authUser,
+    string $secretKey,
+    $validUntil = null,
+    $lifetime = SIGNATURE_LIFETIME,
+    array $extra = null,
+    string $signatureParam = DEFAULT_SIGNATURE_PARAM,
+    string $authUserParam = DEFAULT_AUTH_USER_PARAM,
+    string $validUntilParam = DEFAULT_VALID_UNTIL_PARAM,
+    string $extraParam = DEFAULT_EXTRA_PARAM
+): array
+{
+    $signature = generateSignature(
+        $authUser,
+        $secretKey,
+        $validUntil,
+        $lifetime,
+        $extra,
+    );
+
+    $requestHelper = new RequestHelper(
+        $signatureParam,
+        $authUserParam,
+        $validUntilParam,
+        $extraParam,
+    );
+
+    return $requestHelper->signatureToDict($signature);
+}
+
+/**
+ * Validate signed request data.
+ *
+ * @param array $data
+ * @param string $secretKey
+ * @param string $signatureParam
+ * @param string $authUserParam
+ * @param string $validUntilParam
+ * @param string $extraParam
+ * @param bool $validate
+ * @param bool $failSilently
+ * @return bool
+ */
+function validateSignedRequestData(
+    array $data,
+    string $secretKey,
+    string $signatureParam = DEFAULT_SIGNATURE_PARAM,
+    string $authUserParam = DEFAULT_AUTH_USER_PARAM,
+    string $validUntilParam = DEFAULT_VALID_UNTIL_PARAM,
+    string $extraParam = DEFAULT_EXTRA_PARAM,
+    bool $validate = false,
+    bool $failSilently = false
+) {
+    $requestHelper = new RequestHelper(
+        $signatureParam,
+        $authUserParam,
+        $validUntilParam,
+        $extraParam
+    );
+
+    return $requestHelper->validateRequestData($data, $secretKey);
 }
 
 final class Placeholder
