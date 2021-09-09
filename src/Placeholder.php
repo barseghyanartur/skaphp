@@ -1,8 +1,12 @@
 <?php
-
 declare(strict_types=1);
 
-//namespace barseghyanartur\ska;
+
+namespace barseghyanartur\ska;
+
+use DateTime;
+use Exception;
+
 /**
  * *******************************************
  * *************** Constants *****************
@@ -174,10 +178,11 @@ class Signature {
     /**
      * Check if signature is expired.
      *
-     * @return boolean
+     * @return bool
      */
-    public function isExpired() {
-        $now = new Date();
+    public function isExpired(): bool
+    {
+        $now = new DateTime();
         $validUntil = unixTimestampToDate($this->validUntil);
         $res = $validUntil > $now;
         return !$res;
@@ -414,9 +419,6 @@ function generateSignature(
     }
 
     $hash = makeHash($authUser, $secretKey, $validUntil, $extra);
-//    echo("----------------------- hash ----------------------\n");
-//    print_r($hash);
-//    echo("\n");
     $signature = base64_encode($hash);
 
     return new Signature($signature, $authUser, $validUntil, $extra);
