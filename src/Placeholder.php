@@ -41,6 +41,18 @@ const DEFAULT_EXTRA_PARAM = "extra";
  */
 
 /**
+ * Encode URL components.
+ *
+ * @param string $str
+ * @return string
+ */
+function encodeURIComponent(string $str): string
+{
+    $revert = array('%21'=>'!', '%2A'=>'*', '%27'=>"'", '%28'=>'(', '%29'=>')');
+    return strtr(rawurlencode($str), $revert);
+}
+
+/**
  * Dict to ordered dict.
  *
  * @param array $dict
@@ -71,14 +83,15 @@ function sortedURLEncode(array $data, bool $quoted = true): string
     $_sorted = [];
     foreach ($orderedData as $key => $value) {
         if (is_array($value)) {
-            $_sorted[] = '"'.$key.'='.json_encode($value).'"';
+            $_sorted[] = $key.'='.json_encode($value, JSON_UNESCAPED_SLASHES);
         } else {
-            $_sorted[] = "${key}=${value}";
+            $_sorted[] = $key.'='.$value;
         }
     }
     $_res = implode("&", $_sorted);
     if ($quoted) {
-        $_res = urlencode($_res);
+//        $_res = urlencode($_res);
+        $_res = encodeURIComponent($_res);
     }
     return $_res;
 }
