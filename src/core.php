@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 
-namespace barseghyanartur\ska;
+namespace SKA;
 
 use DateTime;
 use Exception;
