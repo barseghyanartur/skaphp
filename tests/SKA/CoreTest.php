@@ -268,5 +268,41 @@ final class CoreTest extends TestCase
         self::assertEquals($sortedSignatureData, $expectedSortedSignatureData);
     }
 
-    
+    public function testDictKeys(): void
+    {
+        $keys = SKA\dictKeys(PAYLOAD);
+        $expectedKeys = [
+            "amount",
+            "billing",
+            "company",
+            "currency",
+            "order_id",
+            "order_lines",
+            "shipping",
+            "user",
+            "webshop_id",
+        ];
+        self::assertEquals($keys, $expectedKeys);
+    }
+
+    public function testGenerateSignature(): void
+    {
+        // Signature test case 1
+        $signature = SKA\generateSignature(
+            AUTH_USER,
+            SECRET_KEY,
+            $validUntil,
+            SIGNATURE_LIFETIME,
+            null
+        );
+        const expectedSignature = new Signature(
+            "WTjN2wPENDW1gCHEVPKz3IXlE0g=",
+            "me@example.com",
+            "1628717009.0",
+        {}
+    );
+    }
+
+
+
 }
