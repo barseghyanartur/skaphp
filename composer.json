@@ -25,12 +25,18 @@
     },
     "autoload": {
         "psr-4": {
-            "barseghyanartur/ska\\": "src"
-        }
+            "SKA\\": "src"
+        },
+        "files": [
+            "src/SKA/core.php"
+        ]
     },
     "autoload-dev": {
+        "classmap": [
+            "tests/SKA/CoreTest.php"
+        ],
         "psr-4": {
-            "barseghyanartur/ska\\Tests\\": "tests"
+            "SKA\\Tests\\": "tests"
         }
     },
     "config": {
@@ -40,6 +46,9 @@
         "test": [
             "@phpstan",
             "@psalm",
+            "@phpunit"
+        ],
+        "test-fast": [
             "@phpunit"
         ],
         "phpunit": "vendor/bin/phpunit",

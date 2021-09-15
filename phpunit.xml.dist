@@ -7,7 +7,7 @@
 >
     <testsuites>
         <testsuite name="Tests">
-            <directory>tests</directory>
+            <directory>./tests/SKA</directory>
         </testsuite>
     </testsuites>
 
