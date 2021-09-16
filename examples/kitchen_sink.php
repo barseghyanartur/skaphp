@@ -1,10 +1,11 @@
 <?php
-
 /**
  * Sample payload
  */
 
 namespace SKA\Examples;
+
+require_once "src/SKA/core.php";
 
 use function SKA\dictKeys;
 use function SKA\dictToOrderedDict;
