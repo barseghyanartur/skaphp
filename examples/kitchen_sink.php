@@ -14,7 +14,33 @@ use function SKA\signatureToDict;
 use function SKA\sortedURLEncode;
 use function SKA\unixTimestampToDate;
 use const SKA\DEFAULT_SIGNATURE_PARAM;
+use const SKA\JAVASCRIPT_VALUE_DUMPER;
 use const SKA\SIGNATURE_LIFETIME;
+
+/**
+ * Shared secret
+ */
+const SECRET_KEY = "UxuhnPaO4vKA";
+
+/**
+ * Auth user.
+ */
+const AUTH_USER = "me@example.com";
+
+/**
+ * Fields to sign
+ */
+const SIGNATURE_DATA_KEYS = array(
+    "webshop_id",
+    "order_id",
+    "company",
+    "order_lines",
+    "amount",
+    "currency",
+    "user",
+    "shipping",
+    "billing",
+);
 
 /**
  * Sample payload
@@ -106,31 +132,6 @@ EOD;
 
 define("PAYLOAD", json_decode(JSON, true));
 
-/**
- * Shared secret
- */
-const SECRET_KEY = "UxuhnPaO4vKA";
-
-/**
- * Auth user.
- */
-const AUTH_USER = "me@example.com";
-
-
-/**
- * Fields to sign
- */
-const SIGNATURE_DATA_KEYS = array(
-    "webshop_id",
-    "order_id",
-    "company",
-    "order_lines",
-    "amount",
-    "currency",
-    "user",
-    "shipping",
-    "billing",
-);
 
 
 /**
@@ -162,12 +163,10 @@ print_r(PAYLOAD);
  * Signature data
  */
 $signatureData = getSignatureData(PAYLOAD);
-
 echo("\n === \n signatureData \n === \n");
 print_r($signatureData);
 
 $sortedSignatureData = dictToOrderedDict($signatureData);
-
 echo("\n === \n sortedSignatureData \n === \n");
 print_r($sortedSignatureData);
 
@@ -183,45 +182,54 @@ $keys = dictKeys(PAYLOAD);
 echo("\n === \n keys \n === \n");
 print_r($keys);
 
-$dateFromUnitTimestamp = unixTimestampToDate($validUntil);
-echo("\n === \n dateFromUnitTimestamp \n === \n");
-print_r($dateFromUnitTimestamp);
+$dateFromUnixTimestamp = unixTimestampToDate($validUntil);
+echo("\n === \n dateFromUnixTimestamp \n === \n");
+print_r($dateFromUnixTimestamp);
 
 $validUntil2 = 1631087737.0;
-$dateFromUnitTimestamp2 = unixTimestampToDate($validUntil2);
-echo("\n === \n dateFromUnitTimestamp2 \n === \n");
-print_r($dateFromUnitTimestamp2);
+$dateFromUnixTimestamp2 = unixTimestampToDate($validUntil2);
+echo("\n === \n dateFromUnixTimestamp2 \n === \n");
+print_r($dateFromUnixTimestamp2);
 
 $validUntil3 = '1631087737.0';
-$dateFromUnitTimestamp3 = unixTimestampToDate($validUntil3);
-echo("\n === \n dateFromUnitTimestamp3 \n === \n");
-print_r($dateFromUnitTimestamp3);
+$dateFromUnixTimestamp3 = unixTimestampToDate($validUntil3);
+echo("\n === \n dateFromUnixTimestamp3 \n === \n");
+print_r($dateFromUnixTimestamp3);
 
 $validUntil4 = 1629418639.1;
-$dateFromUnitTimestamp4 = unixTimestampToDate($validUntil4);
-echo("\n === \n dateFromUnitTimestamp4 \n === \n");
-print_r($dateFromUnitTimestamp4);
+$dateFromUnixTimestamp4 = unixTimestampToDate($validUntil4);
+echo("\n === \n dateFromUnixTimestamp4 \n === \n");
+print_r($dateFromUnixTimestamp4);
 
 $validUntil5 = '1629418639.1';
-$dateFromUnitTimestamp5 = unixTimestampToDate($validUntil5);
-echo("\n === \n dateFromUnitTimestamp5 \n === \n");
-print_r($dateFromUnitTimestamp5);
+$dateFromUnixTimestamp5 = unixTimestampToDate($validUntil5);
+echo("\n === \n dateFromUnixTimestamp5 \n === \n");
+print_r($dateFromUnixTimestamp5);
 
 $base = getBase(
-    $authUser=AUTH_USER,
+    AUTH_USER,
     $validUntil,
-    $extra=null,
+    null,
 );
 echo("\n === \n base \n === \n");
 print_r($base);
 
 $base2 = getBase(
-    $authUser=AUTH_USER,
+    AUTH_USER,
     $validUntil,
-    $extra=["one" => "1", "two" => "2"],
+    ["one" => "1", "two" => "2"],
 );
 echo("\n === \n base2 \n === \n");
 print_r($base2);
+
+$base3 = getBase(
+    AUTH_USER,
+    $validUntil,
+    ["one" => "1", "two" => "2", "three" => []],
+    JAVASCRIPT_VALUE_DUMPER
+);
+echo("\n === \n base3 \n === \n");
+print_r($base3);
 
 $encodedData = sortedURLEncode($signatureData);
 echo("\n === \n encodedData \n === \n");
@@ -236,17 +244,17 @@ echo("\n === \n orderedPayload \n === \n");
 print_r($orderedPayload);
 
 $hash = makeHash(
-    $authUser=AUTH_USER,
-    $secretKey=SECRET_KEY,
+    AUTH_USER,
+    SECRET_KEY,
     $validUntil,
-    $extra=$sortedSignatureData,
+    $sortedSignatureData,
 );
 echo("\n === \n hash \n === \n");
 print_r($hash);
 
 $hash2 = makeHash(
-    $authUser=AUTH_USER,
-    $secretKey=SECRET_KEY,
+    AUTH_USER,
+    SECRET_KEY,
     $validUntil,
     $extra=null,
 );
@@ -254,41 +262,40 @@ echo("\n === \n hash2 \n === \n");
 print_r($hash2);
 
 $hash3 = makeHash(
-    $authUser=AUTH_USER,
-    $secretKey=SECRET_KEY,
+    AUTH_USER,
+    SECRET_KEY,
     $validUntil,
     $extra=["one"=>"1", "two"=>"2"],
 );
 echo("\n === \n hash3 \n === \n");
 print_r($hash3);
 
-
 $signature = generateSignature(
-    $authUser=AUTH_USER,
-    $secretKey=SECRET_KEY,
+    AUTH_USER,
+    SECRET_KEY,
     $validUntil,
-    $lifetime=SIGNATURE_LIFETIME,
-    $extra=null,
+    SIGNATURE_LIFETIME,
+    null,
 );
 echo("\n === \n signature \n === \n");
 print_r($signature);
 
 $signature2 = generateSignature(
-    $authUser=AUTH_USER,
-    $secretKey=SECRET_KEY,
+    AUTH_USER,
+    SECRET_KEY,
     $validUntil,
-    $lifetime=SIGNATURE_LIFETIME,
-    $extra=["one"=>"1", "two"=>"2"]
+    SIGNATURE_LIFETIME,
+    ["one"=>"1", "two"=>"2"]
 );
 echo("\n === \n signature2 \n === \n");
 print_r($signature2);
 
 $signature3 = generateSignature(
-    $authUser=AUTH_USER,
-    $secretKey=SECRET_KEY,
+    AUTH_USER,
+    SECRET_KEY,
     $validUntil,
-    $lifetime=SIGNATURE_LIFETIME,
-    $extra=$signatureData
+    SIGNATURE_LIFETIME,
+    $signatureData
 );
 echo("\n === \n signature3 \n === \n");
 print_r($signature3);
