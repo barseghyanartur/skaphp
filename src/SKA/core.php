@@ -152,7 +152,7 @@ function dictKeys(array $dict, bool $returnString = false)
 function extractSignedData(array $data, array $extra): array {
     $dataCopy = unserialize(serialize($data));
     foreach ($dataCopy as $key => $value) {
-        if (in_array($key, $extra)) {
+        if (!in_array($key, $extra, true)) {
             unset($dataCopy[$key]);
         }
     }

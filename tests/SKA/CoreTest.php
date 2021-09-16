@@ -653,4 +653,148 @@ final class CoreTest extends TestCase
         $expectedOrderedPayload = json_decode($expectedOrderedPayloadJSON, true);
         self::assertEquals($orderedPayload, $expectedOrderedPayload);
     }
+
+    public function testExtractSignedData(): void
+    {
+        // Test case 1
+        $signatureDict = SKA\signatureToDict(
+            PAYLOAD["webshop_id"],
+            SECRET_KEY,
+            VALID_UNTIL,
+            SKA\SIGNATURE_LIFETIME,
+            SIGNATURE_DATA,
+            SKA\DEFAULT_SIGNATURE_PARAM,
+            "webshop_id"
+        );
+        $extractedSignedData = SKA\extractSignedData(
+            $signatureDict,
+            SIGNATURE_DATA_KEYS
+        );
+        $expectedExtractedSignedDataJSON = <<<EOT
+            {
+                "order_lines": [{
+                    "quantity": 4,
+                    "product_id": "8273401260171",
+                    "product_name": "himself",
+                    "product_description": "Man movement another skill draw great late.",
+                    "product_price_excl_tax": 7685,
+                    "product_price_incl_tax": 8684,
+                    "product_tax_rate_percentage": 13
+                }, {
+                    "quantity": 5,
+                    "product_id": "6760122207575",
+                    "product_name": "someone",
+                    "product_description": "Including couple happen ago hotel son know list.",
+                    "product_price_excl_tax": 19293,
+                    "product_price_incl_tax": 20064,
+                    "product_tax_rate_percentage": 4
+                }, {
+                    "quantity": 1,
+                    "product_id": "5014352615527",
+                    "product_name": "able",
+                    "product_description": "Simply reason bring manager with lot.",
+                    "product_price_excl_tax": 39538,
+                    "product_price_incl_tax": 41910,
+                    "product_tax_rate_percentage": 6
+                }, {
+                    "quantity": 1,
+                    "product_id": "4666517682328",
+                    "product_name": "person",
+                    "product_description": "Arrive government such arm conference program every.",
+                    "product_price_excl_tax": 18794,
+                    "product_price_incl_tax": 18794,
+                    "product_tax_rate_percentage": 0
+                }, {
+                    "quantity": 2,
+                    "product_id": "3428396033957",
+                    "product_name": "chance",
+                    "product_description": "Ever campaign next store far stop and.",
+                    "product_price_excl_tax": 26894,
+                    "product_price_incl_tax": 29314,
+                    "product_tax_rate_percentage": 9
+                }, {
+                    "quantity": 4,
+                    "product_id": "4822589619741",
+                    "product_name": "style",
+                    "product_description": "Song any season pick box chance.",
+                    "product_price_excl_tax": 17037,
+                    "product_price_incl_tax": 19422,
+                    "product_tax_rate_percentage": 14
+                }],
+                "webshop_id": "4381a041-11cd-43fa-9fb4-c558bac1bd5e",
+                "order_id": "lTAGlTOHtKiBdvRvmhSw",
+                "amount": 491605,
+                "currency": "EUR",
+                "company": {
+                    "name": "Siemens",
+                    "registration_number": "LhkvLTWNTVNxlMKfBruq",
+                    "vat_number": "RNQfPcPtnbDFvQRbJeNJ",
+                    "website": "https://www.nedschroef.com/",
+                    "country": "NL"
+                },
+                "user": {
+                    "first_name": "Noor",
+                    "last_name": "van Praagh",
+                    "email": "juliegoyaerts-van-waderle@gmail.com",
+                    "phone_number": "+31475013353"
+                },
+                "shipping": {
+                    "street": "Femkeboulevard",
+                    "house_number": "7",
+                    "city": "Noord-Sleen",
+                    "postal_code": "1784KL",
+                    "country": "NL"
+                },
+                "billing": {
+                    "street": "Pippasteeg",
+                    "house_number": "35",
+                    "city": "Ospel",
+                    "postal_code": "6385 VA",
+                    "country": "NL"
+                }
+            }
+        EOT;
+        $expectedExtractedSignedData = json_decode($expectedExtractedSignedDataJSON, true);
+        print_r($extractedSignedData);
+        print_r($expectedExtractedSignedData);
+        self::assertEquals($extractedSignedData, $expectedExtractedSignedData);
+    }
+
+    public function testValidateSignature(): void
+    {
+        // Test case 1 - valid non-expired signature
+        $signature = SKA\generateSignature(
+            AUTH_USER,
+            SECRET_KEY,
+            SKA\makeValidUntil(),
+            SKA\SIGNATURE_LIFETIME,
+            null
+        );
+        $isValidSignature = SKA\validateSignature(
+            $signature->signature,
+            $signature->authUser,
+            SECRET_KEY,
+            $signature->validUntil,
+            $signature->extra
+        );
+        self::assertTrue($isValidSignature);
+
+        // Test case 2 - expired signature
+        $signature2 = SKA\generateSignature(
+            AUTH_USER,
+            SECRET_KEY,
+            VALID_UNTIL,
+            SKA\SIGNATURE_LIFETIME,
+            null
+        );
+        $isValidSignature2 = SKA\validateSignature(
+            $signature2->signature,
+            $signature2->authUser,
+            SECRET_KEY,
+            $signature2->validUntil,
+            $signature2->extra
+        );
+        self::assertFalse($isValidSignature2);
+        self::assertTrue($signature2->isExpired());
+    }
 }
