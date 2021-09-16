@@ -35,8 +35,10 @@ Secret Key. It's being checked whether signature is valid and not expired.
 
 -   Sign dictionaries.
 -   Validate signed dictionaries.
--   Sign URLs. Append and sign additional URL data.
--   Validate URLs.
+
+## Prerequisites
+
+- composer
 
 ## Installation
 
@@ -141,6 +143,10 @@ Default name of the (GET) param holding the `validUntil` value is
 `valid_until`. If you want it to be different, set the `validUntilParam`
 in the `$options` of the `signatureToDict` function.
 
+Default name of the (GET) param holding the `extra` value is
+`extra`. If you want it to be different, set the `extraParam`
+in the `$options` of the `signatureToDict` function.
+
 ```php
 $signedData = SKA\signatureToDict(
     "user", 
@@ -179,13 +185,34 @@ Validating the signed request data is as simple as follows.
 ##### Validate signed requests
 
 Validating the signed request data. Note, that `$data` value is expected to
-be a dictionary; `request.GET` is given as an example. It will most likely
-vary from what's used in your framework (unless you use Django).
+be a dictionary; `$request->GET` is given as an example.
 
 ```php
 $validationResult = SKA\validateSignedRequestData(
-    request.GET, // Note, that ``request.GET`` is given as example.
+    $request->GET, // Note, that `$request->GET` is given as example.
     "your-secret_key"
+);
+```
+
+**Options and defaults:**
+
+Similarly to `signatureToDict` function, the `validateSignedRequestData`
+also accepts a number of optional arguments (which have been described above):
+
+- signatureParam
+- authUserParam
+- validUntilParam
+- extraParam
+
+With some customizations, it would look as follows:
+
+```php
+$validationResult = SKA\validateSignedRequestData(
+    $request->GET,
+    "your-secret_key",
+    [
+        "authUserParam" => "webshop_id"
+    ]
 );
 ```
 
