@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 namespace SKA\Tests;
@@ -131,7 +130,8 @@ const SIGNATURE_DATA_KEYS = array(
  * @param array $requestData
  * @return array
  */
-function getSignatureData(array $requestData): array {
+function getSignatureData(array $requestData): array
+{
     $signatureData = array();
     foreach ($requestData as $key => $value) {
         if (in_array($key, SIGNATURE_DATA_KEYS, true)) {
@@ -147,7 +147,6 @@ define("VALID_UNTIL", SKA\formatValidUntil("1628717009.0"));
 /**
  * Tests.
  */
-
 final class CoreTest extends TestCase
 {
 
@@ -769,6 +768,7 @@ final class CoreTest extends TestCase
             SKA\SIGNATURE_LIFETIME,
             null
         );
+        self::assertNotNull($signature);
         $isValidSignature = SKA\validateSignature(
             $signature->signature,
             $signature->authUser,
@@ -786,6 +786,7 @@ final class CoreTest extends TestCase
             SKA\SIGNATURE_LIFETIME,
             null
         );
+        self::assertNotNull($signature2);
         $isValidSignature2 = SKA\validateSignature(
             $signature2->signature,
             $signature2->authUser,
