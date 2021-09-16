@@ -157,11 +157,11 @@ final class CoreTest extends TestCase
     protected function setUp(): void
     {
 //        $this->placeholder = new Placeholder('Artur Barseghyan says: ');
+//        self::assertSame('Artur Barseghyan says: Hello', $this->placeholder->echo('Hello'));
     }
 
     public function testSortedURLEncode(): void
     {
-//        self::assertSame('Artur Barseghyan says: Hello', $this->placeholder->echo('Hello'));
         $encodedData = SKA\sortedURLEncode(SIGNATURE_DATA);
         $expectedData = "amount%3D491605%26billing%3D%7B%22city%22%3A%22Ospel%22%2C%22country%22%3A%22NL%22%2C%22house_number%22%3A%2235%22%2C%22postal_code%22%3A%226385%20VA%22%2C%22street%22%3A%22Pippasteeg%22%7D%26company%3D%7B%22country%22%3A%22NL%22%2C%22name%22%3A%22Siemens%22%2C%22registration_number%22%3A%22LhkvLTWNTVNxlMKfBruq%22%2C%22vat_number%22%3A%22RNQfPcPtnbDFvQRbJeNJ%22%2C%22website%22%3A%22https%3A%2F%2Fwww.nedschroef.com%2F%22%7D%26currency%3DEUR%26order_id%3DlTAGlTOHtKiBdvRvmhSw%26order_lines%3D%5B%7B%22product_description%22%3A%22Man%20movement%20another%20skill%20draw%20great%20late.%22%2C%22product_id%22%3A%228273401260171%22%2C%22product_name%22%3A%22himself%22%2C%22product_price_excl_tax%22%3A7685%2C%22product_price_incl_tax%22%3A8684%2C%22product_tax_rate_percentage%22%3A13%2C%22quantity%22%3A4%7D%2C%7B%22product_description%22%3A%22Including%20couple%20happen%20ago%20hotel%20son%20know%20list.%22%2C%22product_id%22%3A%226760122207575%22%2C%22product_name%22%3A%22someone%22%2C%22product_price_excl_tax%22%3A19293%2C%22product_price_incl_tax%22%3A20064%2C%22product_tax_rate_percentage%22%3A4%2C%22quantity%22%3A5%7D%2C%7B%22product_description%22%3A%22Simply%20reason%20bring%20manager%20with%20lot.%22%2C%22product_id%22%3A%225014352615527%22%2C%22product_name%22%3A%22able%22%2C%22product_price_excl_tax%22%3A39538%2C%22product_price_incl_tax%22%3A41910%2C%22product_tax_rate_percentage%22%3A6%2C%22quantity%22%3A1%7D%2C%7B%22product_description%22%3A%22Arrive%20government%20such%20arm%20conference%20program%20every.%22%2C%22product_id%22%3A%224666517682328%22%2C%22product_name%22%3A%22person%22%2C%22product_price_excl_tax%22%3A18794%2C%22product_price_incl_tax%22%3A18794%2C%22product_tax_rate_percentage%22%3A0%2C%22quantity%22%3A1%7D%2C%7B%22product_description%22%3A%22Ever%20campaign%20next%20store%20far%20stop%20and.%22%2C%22product_id%22%3A%223428396033957%22%2C%22product_name%22%3A%22chance%22%2C%22product_price_excl_tax%22%3A26894%2C%22product_price_incl_tax%22%3A29314%2C%22product_tax_rate_percentage%22%3A9%2C%22quantity%22%3A2%7D%2C%7B%22product_description%22%3A%22Song%20any%20season%20pick%20box%20chance.%22%2C%22product_id%22%3A%224822589619741%22%2C%22product_name%22%3A%22style%22%2C%22product_price_excl_tax%22%3A17037%2C%22product_price_incl_tax%22%3A19422%2C%22product_tax_rate_percentage%22%3A14%2C%22quantity%22%3A4%7D%5D%26shipping%3D%7B%22city%22%3A%22Noord-Sleen%22%2C%22country%22%3A%22NL%22%2C%22house_number%22%3A%227%22%2C%22postal_code%22%3A%221784KL%22%2C%22street%22%3A%22Femkeboulevard%22%7D%26user%3D%7B%22email%22%3A%22juliegoyaerts-van-waderle%40gmail.com%22%2C%22first_name%22%3A%22Noor%22%2C%22last_name%22%3A%22van%20Praagh%22%2C%22phone_number%22%3A%22%2B31475013353%22%7D%26webshop_id%3D4381a041-11cd-43fa-9fb4-c558bac1bd5e";
         self::assertSame($encodedData, $expectedData);
@@ -529,7 +529,39 @@ final class CoreTest extends TestCase
             }
         EOD;
         $expectedSignatureDict = json_decode($expectedSignatureDictJSON, true);
-
         self::assertEquals($signatureDict, $expectedSignatureDict);
+
+        // Test case 2
+        $signatureDict2 = SKA\signatureToDict(
+            PAYLOAD["webshop_id"],
+            SECRET_KEY,
+            VALID_UNTIL,
+            SKA\SIGNATURE_LIFETIME,
+            ["one" => "1", "two" => "2"],
+            SKA\DEFAULT_SIGNATURE_PARAM,
+            "webshop_id"
+        );
+        $expectedSignatureDict2 = [
+            "one" => "1",
+            "two" => "2",
+            "signature" => "Fg4s3QErL2GySta8VhNBXaaBSDM=",
+            "webshop_id" => "4381a041-11cd-43fa-9fb4-c558bac1bd5e",
+            "valid_until" => "1628717009.0",
+            "extra" => "one,two",
+        ];
+        self::assertEquals($signatureDict2, $expectedSignatureDict2);
+    }
+
+    public function testGetBase(): void
+    {
+        // Test case 1
+        $base = SKA\getBase(AUTH_USER, VALID_UNTIL, null);
+        $expectedBase = "1628717009.0_me@example.com";
+        self::assertEquals($base, $expectedBase);
+
+        // Test case 2
+        $base2 = SKA\getBase(AUTH_USER, VALID_UNTIL, ["one" => "1", "two" => "2"]);
+        $expectedBase2 = "1628717009.0_me@example.com_one%3D1%26two%3D2";
+        self::assertEquals($base2, $expectedBase2);
     }
 }
