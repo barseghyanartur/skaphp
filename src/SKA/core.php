@@ -235,7 +235,7 @@ function validateSignature(
         $secretKey,
         $validUntil,
         SIGNATURE_LIFETIME,
-        $extra,
+        $extra
     );
 
     if (!$returnObject) {
@@ -331,7 +331,7 @@ class RequestHelper {
             $authUser,
             $secretKey,
             $validUntil,
-            $extraData,
+            $extraData
         );
     }
 }
@@ -499,7 +499,7 @@ function signatureToDict(
     $defaults = getSignatureToDictDefaults($lifetime);
     $options = array_replace($defaults, $options);
     $validUntil = $options["validUntil"];
-//    $lifetime = $options["lifetime"];
+
     $signatureParam = $options["signatureParam"];
     $authUserParam = $options["authUserParam"];
     $validUntilParam = $options["validUntilParam"];
@@ -524,14 +524,24 @@ function signatureToDict(
 }
 
 /**
+ * Defaults for validateSignedRequestData function.
+ */
+//    * @param string $signatureParam
+//    * @param string $authUserParam
+//    * @param string $validUntilParam
+//    * @param string $extraParam
+const VALIDATE_SIGNED_REQUEST_DATA_DEFAULTS = [
+    "signatureParam" => DEFAULT_SIGNATURE_PARAM,
+    "authUserParam" => DEFAULT_AUTH_USER_PARAM,
+    "validUntilParam" => DEFAULT_VALID_UNTIL_PARAM,
+    "extraParam" => DEFAULT_EXTRA_PARAM
+];
+
+/**
  * Validate signed request data.
  *
  * @param array $data
  * @param string $secretKey
- * @param string $signatureParam
- * @param string $authUserParam
- * @param string $validUntilParam
- * @param string $extraParam
  * @param bool $validate
  * @param bool $failSilently
  * @return bool
@@ -539,13 +549,16 @@ function signatureToDict(
 function validateSignedRequestData(
     array $data,
     string $secretKey,
-    string $signatureParam = DEFAULT_SIGNATURE_PARAM,
-    string $authUserParam = DEFAULT_AUTH_USER_PARAM,
-    string $validUntilParam = DEFAULT_VALID_UNTIL_PARAM,
-    string $extraParam = DEFAULT_EXTRA_PARAM,
+    array $options = [],
     bool $validate = false,
     bool $failSilently = false
 ) {
+    $options = array_replace(VALIDATE_SIGNED_REQUEST_DATA_DEFAULTS, $options);
+    $signatureParam = $options["signatureParam"];
+    $authUserParam = $options["authUserParam"];
+    $validUntilParam = $options["validUntilParam"];
+    $extraParam = $options["extraParam"];
+
     $requestHelper = new RequestHelper(
         $signatureParam,
         $authUserParam,

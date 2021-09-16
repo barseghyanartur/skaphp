@@ -759,8 +759,6 @@ final class CoreTest extends TestCase
             }
         EOT;
         $expectedExtractedSignedData = json_decode($expectedExtractedSignedDataJSON, true);
-        print_r($extractedSignedData);
-        print_r($expectedExtractedSignedData);
         self::assertEquals($extractedSignedData, $expectedExtractedSignedData);
     }
 
@@ -802,5 +800,27 @@ final class CoreTest extends TestCase
         );
         self::assertFalse($isValidSignature2);
         self::assertTrue($signature2->isExpired());
+    }
+
+    public function testValidateSignedRequestData(): void
+    {
+        // Test case 1
+        $signatureDict = SKA\signatureToDict(
+            PAYLOAD["webshop_id"],
+            SECRET_KEY,
+            SIGNATURE_DATA,
+            [
+                "validUntil" => SKA\makeValidUntil(),
+                "authUserParam" => "webshop_id"
+            ]
+        );
+        $validationResult = SKA\validateSignedRequestData(
+            $signatureDict,
+            SECRET_KEY,
+            [
+                "authUserParam" => "webshop_id"
+            ]
+        );
+        self::assertTrue($validationResult);
     }
 }

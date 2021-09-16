@@ -178,12 +178,12 @@ Validating the signed request data is as simple as follows.
 
 ##### Validate signed requests
 
-Validating the signed request data. Note, that `data` value is expected to
+Validating the signed request data. Note, that `$data` value is expected to
 be a dictionary; `request.GET` is given as an example. It will most likely
 vary from what's used in your framework (unless you use Django).
 
-```javascript
-validationResult = validateSignedRequestData(
+```php
+$validationResult = SKA\validateSignedRequestData(
     request.GET, // Note, that ``request.GET`` is given as example.
     "your-secret_key"
 );
