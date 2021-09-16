@@ -431,11 +431,13 @@ final class CoreTest extends TestCase
         $signatureDict = SKA\signatureToDict(
             PAYLOAD["webshop_id"],
             SECRET_KEY,
-            VALID_UNTIL,
-            SKA\SIGNATURE_LIFETIME,
             SIGNATURE_DATA,
-            SKA\DEFAULT_SIGNATURE_PARAM,
-            "webshop_id"
+            [
+                "validUntil" => VALID_UNTIL,
+//                "lifetime" => SKA\SIGNATURE_LIFETIME,
+//                "signatureParam" => SKA\DEFAULT_SIGNATURE_PARAM,
+                "authUserParam" => "webshop_id"
+            ]
         );
         $expectedSignatureDictJSON = <<<EOD
             {
@@ -531,11 +533,13 @@ final class CoreTest extends TestCase
         $signatureDict2 = SKA\signatureToDict(
             PAYLOAD["webshop_id"],
             SECRET_KEY,
-            VALID_UNTIL,
-            SKA\SIGNATURE_LIFETIME,
             ["one" => "1", "two" => "2"],
-            SKA\DEFAULT_SIGNATURE_PARAM,
-            "webshop_id"
+            [
+                "validUntil" => VALID_UNTIL,
+//                "lifetime" => SKA\SIGNATURE_LIFETIME,
+//                "signatureParam" => SKA\DEFAULT_SIGNATURE_PARAM,
+                "authUserParam" => "webshop_id"
+            ]
         );
         $expectedSignatureDict2 = [
             "one" => "1",
@@ -658,11 +662,13 @@ final class CoreTest extends TestCase
         $signatureDict = SKA\signatureToDict(
             PAYLOAD["webshop_id"],
             SECRET_KEY,
-            VALID_UNTIL,
-            SKA\SIGNATURE_LIFETIME,
             SIGNATURE_DATA,
-            SKA\DEFAULT_SIGNATURE_PARAM,
-            "webshop_id"
+            [
+                "validUntil" => VALID_UNTIL,
+//                "lifetime" => SKA\SIGNATURE_LIFETIME,
+//                "signatureParam" => SKA\DEFAULT_SIGNATURE_PARAM,
+                "authUserParam" => "webshop_id"
+            ]
         );
         $extractedSignedData = SKA\extractSignedData(
             $signatureDict,

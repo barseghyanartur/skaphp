@@ -48,18 +48,10 @@ composer require barseghyanartur/ska
 
 ## Usage examples
 
-Usage example are present for both CommonJS and ESM.
-
-### CommonJS
+Usage example are present.
 
 ```shell
-node examples.js
-```
-
-### ESM
-
-```shell
-node examples.mjs
+php examples/kitchen_sink.php
 ```
 
 ### Basic usage
@@ -70,98 +62,119 @@ Signing dictionaries is as simple as follows.
 
 ##### Required imports.
 
-**CommonJS**
-
-```javascript
-const { signatureToDict } = require("skajs");
-```
-
-**ESM**
-
-```javascript
-import { signatureToDict } from "skajs";
+```php
+require_once(dirname(__FILE__)."/src/SKA/core.php");
+use SKA;
 ```
 
 ##### Sign data
 
-```javascript
-const signatureDict = signatureToDict("user", "your-secret_key", null, null, {
-    1: "1",
-    2: "2",
-});
+**Sample usage:**
+
+```php
+$signedData = SKA\signatureToDict("user", "your-secret_key");
+print_r($signedData);
 ```
 
-Sample output:
+**Sample output:**
 
-```json
-{
-    "signature": "YlZpLFsjUKBalL4x5trhkeEgqE8=",
-    "auth_user": "user",
-    "valid_until": "1378045287.0"
-}
+```php
+Array
+(
+    [signature] => WEwnd40jMusHD6hRZ9WOCR8Zym4=
+    [auth_user] => user
+    [valid_until] => 1631795130.0
+    [extra] => 
+)
 ```
+
+**Adding of additional data to the signature works in the same way:**
+
+```php
+$signedData = SKA\signatureToDict(
+    "user", 
+    "your-secret_key", 
+    [
+        "email" => "john.doe@mail.example.com",
+        "first_name" => "John",
+        "last_name" => "Doe",
+    ]
+);
+print_r($signedData);
+```
+
+**Sample output:**
+
+```php
+Array
+(
+    [signature] => B0sscS+xXWU+NR+9dBCoGFnDtlw=
+    [auth_user] => user
+    [valid_until] => 1631797926.0
+    [extra] => email,first_name,last_name
+    [email] => john.doe@mail.example.com
+    [first_name] => John
+    [last_name] => Doe
+)
+```
+
+**Options and defaults:**
+
+The `signatureToDict` function accepts an optional `$options` argument.
+
+Default value for the `validUntil` in the `$options` is 10 minutes from now. If
+you want it to be different, set `validUntil` in the `$options` of 
+the `signatureToDict` function.
 
 Default lifetime of a signature is 10 minutes (600 seconds). If you want it
-to be different, provide a `lifetime` argument to `signUrl` function.
+to be different, set `lifetime` in the `$options` of the `signatureToDict` function.
 
 Default name of the (GET) param holding the generated signature value
-is `signature`. If you want it to be different, provide a `signatureParam`
-argument to `signatureToDict` function.
+is `signature`. If you want it to be different, set the `signatureParam`
+in the `$options` of the `signatureToDict` function.
 
 Default name of the (GET) param holding the `authUser` value is
-`auth_user`. If you want it to be different, provide a `authUserParam`
-argument to `signatureToDict` function.
+`auth_user`. If you want it to be different, set `authUserParam`
+in the `$options` of the `signatureToDict` function.
 
 Default name of the (GET) param holding the `validUntil` value is
-`valid_until`. If you want it to be different, provide a `validUntilParam`
-argument to `signatureToDict` function.
+`valid_until`. If you want it to be different, set the `validUntilParam`
+in the `$options` of the `signatureToDict` function.
 
-Note, that by default a suffix '?' is added after the given `url` and
-generated signature params. If you want that suffix to be custom, provide a
-`suffix` argument to the `signatureToDict` function. If you want it to be gone,
-set its' value to empty string.
-
-Adding of additional data to the signature works in the same way:
-
-```javascript
-signature_dict = signatureToDict("user", "your-secret_key", null, null, {
-    email: "john.doe@mail.example.com",
-    first_name: "John",
-    last_name: "Doe",
-});
+```php
+$signedData = SKA\signatureToDict(
+    "user", 
+    "your-secret_key", 
+    [
+        "email" => "john.doe@mail.example.com",
+        "first_name" => "John",
+        "last_name" => "Doe",
+    ],
+    [
+        "authUserParam" => "webshop_id"  
+    ]
+)
+print_r($signedData);
 ```
 
-Sample output:
+**Sample output:**
 
-```json
-{
-    "auth_user": "user",
-    "email": "john.doe@mail.example.com",
-    "extra": "email,first_name,last_name",
-    "first_name": "John",
-    "last_name": "Doe",
-    "signature": "cnSoU/LnJ/ZhfLtDLzab3a3gkug=",
-    "valid_until": 1387616469.0
-}
+```php
+Array
+(
+    [signature] => nu0Un+05z/cNOFnLwQnigoW/KmA=
+    [webshop_id] => user
+    [valid_until] => 1631799172.0
+    [extra] => email,first_name,last_name
+    [email] => john.doe@mail.example.com
+    [first_name] => John
+    [last_name] => Doe
+)
 ```
 
 #### Recipient side
 
 Validating the signed request data is as simple as follows.
-
-##### Required imports
-
-**CommonJS**
-
-```javascript
-const { validateSignedRequestData } = require("skajs");
-```
-
-**ESM**
-
-```javascript
-import { validateSignedRequestData } from "skajs";
-```
 
 ##### Validate signed requests
 
@@ -181,7 +194,7 @@ validationResult = validateSignedRequestData(
 Simply type:
 
 ```shell
-npm test
+composer test
 ```
 
 # Code style

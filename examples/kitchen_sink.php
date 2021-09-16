@@ -296,11 +296,13 @@ print_r($signature3);
 $signatureDict = signatureToDict(
     PAYLOAD["webshop_id"],
     SECRET_KEY,
-    $validUntil,
-    SIGNATURE_LIFETIME,
     $signatureData,
-    DEFAULT_SIGNATURE_PARAM,
-    "webshop_id",
+    [
+        "validUntil" => $validUntil,
+//        "lifetime" => SIGNATURE_LIFETIME,
+//        "signatureParam" => DEFAULT_SIGNATURE_PARAM,
+        "authUserParam" => "webshop_id"
+    ]
 );
 echo("\n === \n signatureDict \n === \n");
 print_r($signatureDict);
@@ -308,11 +310,13 @@ print_r($signatureDict);
 $signatureDict2 = signatureToDict(
     PAYLOAD["webshop_id"],
     SECRET_KEY,
-    $validUntil,
-    SIGNATURE_LIFETIME,
     ["one" => "1", "two" => "2"],
-    DEFAULT_SIGNATURE_PARAM,
-    $authUserParam="webshop_id",
+    [
+        "validUntil" => $validUntil,
+//        "lifetime" => SIGNATURE_LIFETIME,
+//        "signatureParam" => DEFAULT_SIGNATURE_PARAM,
+        "authUserParam" => "webshop_id"
+    ]
 );
 echo("\n === \n signatureDict2 \n === \n");
 print_r($signatureDict2);

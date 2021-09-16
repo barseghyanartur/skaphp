@@ -453,31 +453,58 @@ function generateSignature(
 }
 
 /**
+ * Get defaults for signatureToDict function.
+ *
+ * @param int|null $lifetime
+ * @return array
+ */
+function getSignatureToDictDefaults(int $lifetime = null): array
+{
+    // * @param string|int|float|null validUntil
+    // * @param int|null lifetime
+    // * @param string signatureParam
+    // * @param string authUserParam
+    // * @param string validUntilParam
+    // * @param string extraParam
+    if (is_null($lifetime)) {
+        $lifetime = SIGNATURE_LIFETIME;
+    }
+    return [
+        "validUntil" => makeValidUntil($lifetime),
+        "lifetime" => $lifetime,
+        "signatureParam" => DEFAULT_SIGNATURE_PARAM,
+        "authUserParam" => DEFAULT_AUTH_USER_PARAM,
+        "validUntilParam" => DEFAULT_VALID_UNTIL_PARAM,
+        "extraParam" => DEFAULT_EXTRA_PARAM
+    ];
+}
+
+/**
  * Signature to dict.
  *
  * @param string $authUser
  * @param string $secretKey
- * @param string|int|float|null $validUntil
- * @param int $lifetime
  * @param array|null $extra
- * @param string $signatureParam
- * @param string $authUserParam
- * @param string $validUntilParam
- * @param string $extraParam
+ * @param array|null $options
  * @return array
  */
 function signatureToDict(
     string $authUser,
     string $secretKey,
-    $validUntil = null,
-    int $lifetime = SIGNATURE_LIFETIME,
-    array $extra = null,
-    string $signatureParam = DEFAULT_SIGNATURE_PARAM,
-    string $authUserParam = DEFAULT_AUTH_USER_PARAM,
-    string $validUntilParam = DEFAULT_VALID_UNTIL_PARAM,
-    string $extraParam = DEFAULT_EXTRA_PARAM
+    array $extra = [],
+    array $options = []
 ): array
 {
+    $lifetime = $options["lifetime"] ?? SIGNATURE_LIFETIME;
+    $defaults = getSignatureToDictDefaults($lifetime);
+    $options = array_replace($defaults, $options);
+    $validUntil = $options["validUntil"];
+//    $lifetime = $options["lifetime"];
+    $signatureParam = $options["signatureParam"];
+    $authUserParam = $options["authUserParam"];
+    $validUntilParam = $options["validUntilParam"];
+    $extraParam = $options["extraParam"];
+
     $signature = generateSignature(
         $authUser,
         $secretKey,
