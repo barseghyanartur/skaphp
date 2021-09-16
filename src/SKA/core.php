@@ -39,6 +39,16 @@ const DEFAULT_VALID_UNTIL_PARAM = "valid_until";
 const DEFAULT_EXTRA_PARAM = "extra";
 
 /**
+ * Default value dumper.
+ */
+const DEFAULT_VALUE_DUMPER = "SKA\\defaultValueDumper";
+
+/**
+ * JavaScript value dumper.
+ */
+const JAVASCRIPT_VALUE_DUMPER = "SKA\\javascriptValueDumper";
+
+/**
  * *******************************************
  * *************** Helpers *****************
  * *******************************************
@@ -74,23 +84,47 @@ function dictToOrderedDict(array $dict): array
     return $dictCopy;
 }
 
+function defaultValueDumper($value)
+{
+    if (is_array($value)) {
+        return json_encode($value, JSON_UNESCAPED_SLASHES);
+    }
+    return $value;
+}
+
+function javascriptValueDumper($value)
+{
+    if (is_array($value)) {
+        if (empty($value)) {
+            return "{}";
+        }
+        return json_encode($value, JSON_UNESCAPED_SLASHES);
+    }
+    return $value;
+}
+
 /**
  * Sorted urlencode.
  *
  * @param array $data
  * @param bool $quoted
+ * @param $valueDumper
  * @return string
  */
-function sortedURLEncode(array $data, bool $quoted = true): string
+function sortedURLEncode(array $data, bool $quoted = true, $valueDumper = DEFAULT_VALUE_DUMPER): string
 {
     $orderedData = dictToOrderedDict($data);
     $_sorted = [];
+    if (is_null($valueDumper)) {
+        $valueDumper = DEFAULT_VALUE_DUMPER;
+    }
     foreach ($orderedData as $key => $value) {
-        if (is_array($value)) {
-            $_sorted[] = $key.'='.json_encode($value, JSON_UNESCAPED_SLASHES);
-        } else {
-            $_sorted[] = $key.'='.$value;
-        }
+//        if (is_array($value)) {
+//            $_sorted[] = $key.'='.json_encode($value, JSON_UNESCAPED_SLASHES);
+//        } else {
+//            $_sorted[] = $key.'='.$value;
+//        }
+        $_sorted[] = $key.'='.$valueDumper($value);
     }
     $_res = implode("&", $_sorted);
     if ($quoted) {
@@ -216,6 +250,7 @@ class Signature {
  * @param string|int|float $validUntil
  * @param array|null $extra
  * @param bool $returnObject
+ * @param string $valueDumper
  * @return bool
  */
 function validateSignature(
@@ -224,7 +259,8 @@ function validateSignature(
     string $secretKey,
     $validUntil,
     array $extra = null,
-    bool $returnObject = false
+    bool $returnObject = false,
+    string $valueDumper = DEFAULT_VALUE_DUMPER
 ): bool {
     if (!$extra) {
         $extra = array();
@@ -235,7 +271,8 @@ function validateSignature(
         $secretKey,
         $validUntil,
         SIGNATURE_LIFETIME,
-        $extra
+        $extra,
+        $valueDumper
     );
 
     if (!$returnObject) {
@@ -311,10 +348,16 @@ class RequestHelper {
     /**
      * Validate request data.
      *
-     * @param array data
-     * @param string secretKey
+     * @param array $data
+     * @param string $secretKey
+     * @param string $valueDumper
+     * @return bool
      */
-    public function validateRequestData($data, $secretKey): bool
+    public function validateRequestData(
+        array $data,
+        string $secretKey,
+        string $valueDumper = DEFAULT_VALUE_DUMPER
+    ): bool
     {
         $signature = $data[$this->signatureParam];
         $authUser = $data[$this->authUserParam];
@@ -331,7 +374,9 @@ class RequestHelper {
             $authUser,
             $secretKey,
             $validUntil,
-            $extraData
+            $extraData,
+            false,
+            $valueDumper
         );
     }
 }
@@ -368,9 +413,16 @@ function unixTimestampToDate($validUntil)
  * @param string $authUser
  * @param string|int|float $validUntil
  * @param array|null $extra
+ * @param string $valueDumper
  * @return string
  */
-function getBase(string $authUser, $validUntil, array $extra = null) {
+function getBase(
+    string $authUser,
+    $validUntil,
+    array $extra = null,
+    string $valueDumper = DEFAULT_VALUE_DUMPER
+)
+{
     if (!$extra) {
         $extra = array();
     }
@@ -380,7 +432,7 @@ function getBase(string $authUser, $validUntil, array $extra = null) {
     $_base = [$validUntil, $authUser];
 
     if ($extra) {
-        $urlencodedExtra = sortedURLEncode($extra);
+        $urlencodedExtra = sortedURLEncode($extra, true, $valueDumper);
         if ($urlencodedExtra) {
             $_base[] = $urlencodedExtra;
         }
@@ -402,14 +454,15 @@ function makeHash(
     string $authUser,
     string $secretKey,
     $validUntil = null,
-    array $extra = null
+    array $extra = null,
+    string $valueDumper = DEFAULT_VALUE_DUMPER
 ): string
 {
     if (is_null($extra)) {
         $extra = array();
     }
 
-    $_base = getBase($authUser, $validUntil, $extra);
+    $_base = getBase($authUser, $validUntil, $extra, $valueDumper);
     return hash_hmac("sha1", $_base, $secretKey, true);
 }
 
@@ -428,7 +481,8 @@ function generateSignature(
     string $secretKey,
     $validUntil = null,
     int $lifetime = SIGNATURE_LIFETIME,
-    array $extra = null
+    array $extra = null,
+    string $valueDumper = DEFAULT_VALUE_DUMPER
 ): ?Signature
 {
     if (is_null($extra)) {
@@ -446,7 +500,7 @@ function generateSignature(
     }
     $validUntil = formatValidUntil($validUntil);
 
-    $hash = makeHash($authUser, $secretKey, $validUntil, $extra);
+    $hash = makeHash($authUser, $secretKey, $validUntil, $extra, $valueDumper);
     $signature = base64_encode($hash);
 
     return new Signature($signature, $authUser, $validUntil, $extra);
@@ -466,6 +520,7 @@ function getSignatureToDictDefaults(int $lifetime = null): array
     // * @param string authUserParam
     // * @param string validUntilParam
     // * @param string extraParam
+    // * @param string valueDumper
     if (is_null($lifetime)) {
         $lifetime = SIGNATURE_LIFETIME;
     }
@@ -475,7 +530,8 @@ function getSignatureToDictDefaults(int $lifetime = null): array
         "signatureParam" => DEFAULT_SIGNATURE_PARAM,
         "authUserParam" => DEFAULT_AUTH_USER_PARAM,
         "validUntilParam" => DEFAULT_VALID_UNTIL_PARAM,
-        "extraParam" => DEFAULT_EXTRA_PARAM
+        "extraParam" => DEFAULT_EXTRA_PARAM,
+        "valueDumper" => DEFAULT_VALUE_DUMPER,
     ];
 }
 
@@ -504,6 +560,7 @@ function signatureToDict(
     $authUserParam = $options["authUserParam"];
     $validUntilParam = $options["validUntilParam"];
     $extraParam = $options["extraParam"];
+    $valueDumper = $options["valueDumper"];
 
     $signature = generateSignature(
         $authUser,
@@ -511,6 +568,7 @@ function signatureToDict(
         $validUntil,
         $lifetime,
         $extra,
+        $valueDumper
     );
 
     $requestHelper = new RequestHelper(
@@ -530,11 +588,13 @@ function signatureToDict(
 //    * @param string $authUserParam
 //    * @param string $validUntilParam
 //    * @param string $extraParam
+//    * @param string $valueDumper
 const VALIDATE_SIGNED_REQUEST_DATA_DEFAULTS = [
     "signatureParam" => DEFAULT_SIGNATURE_PARAM,
     "authUserParam" => DEFAULT_AUTH_USER_PARAM,
     "validUntilParam" => DEFAULT_VALID_UNTIL_PARAM,
-    "extraParam" => DEFAULT_EXTRA_PARAM
+    "extraParam" => DEFAULT_EXTRA_PARAM,
+    "valueDumper" => DEFAULT_VALUE_DUMPER,
 ];
 
 /**
@@ -558,6 +618,7 @@ function validateSignedRequestData(
     $authUserParam = $options["authUserParam"];
     $validUntilParam = $options["validUntilParam"];
     $extraParam = $options["extraParam"];
+    $valueDumper = $options["valueDumper"];
 
     $requestHelper = new RequestHelper(
         $signatureParam,
@@ -566,5 +627,5 @@ function validateSignedRequestData(
         $extraParam
     );
 
-    return $requestHelper->validateRequestData($data, $secretKey);
+    return $requestHelper->validateRequestData($data, $secretKey, $valueDumper);
 }
