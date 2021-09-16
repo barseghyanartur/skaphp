@@ -3,7 +3,7 @@
 Lets you easily sign data, using symmetric-key algorithm encryption. Allows
 you to validate signed data and identify possible validation errors. Uses
 sha/hmac for signature encryption. Comes with shortcut functions for signing (and
-validating) dictionaries and URLs.
+validating) dictionaries (associative arrays).
 
 ## Key concepts
 
