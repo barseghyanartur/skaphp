@@ -13,6 +13,12 @@ major.minor[.revision]
   0.3.4 to 0.4).
 - All backwards incompatible changes are mentioned in this document.
 
+## 0.1.1
+
+2021-09-17
+
+- Update keywords in the compose.json.
+
 ## 0.1.0
 
 2021-09-17
