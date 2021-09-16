@@ -1,14 +1,19 @@
 {
     "name": "barseghyanartur/ska",
+    "version": "0.1.0",
     "type": "library",
     "description": "Sign data using symmetric-key algorithm encryption. Validate signed data and identify possible validation errors. Uses sha-(1, 224, 256, 385 and 512)/hmac for signature encryption. Custom hash algorithms are allowed. Useful shortcut functions for signing (and validating) dictionaries and URLs.",
     "license": "MIT",
     "authors": [
         {
             "name": "Artur Barseghyan",
-            "email": "artur.barseghyan@gmail.com"
+            "email": "artur.barseghyan@gmail.com",
+            "homepage": "https://github.com/barseghyanartur",
+            "role": "Developer"
         }
     ],
+    "homepage": "https://github.com/barseghyanartur/skaphp",
+    "keywords": ["log","logging"],
     "require": {
         "php": "^7.4 || ~8.0.0",
         "ext-json": "*",
@@ -43,14 +48,15 @@
         "sort-packages": true
     },
     "scripts": {
-        "test": [
+        "test-verbose": [
             "@phpstan",
             "@psalm",
             "@phpunit"
         ],
-        "test-fast": [
+        "test": [
             "@phpunit"
         ],
+        "example": "php examples/kitchen_sink.php",
         "phpunit": "vendor/bin/phpunit",
         "phpstan": "vendor/bin/phpstan analyse",
         "psalm": "vendor/bin/psalm"
