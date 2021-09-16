@@ -134,13 +134,12 @@ const SIGNATURE_DATA_KEYS = array(
 function getSignatureData(array $requestData): array {
     $signatureData = array();
     foreach ($requestData as $key => $value) {
-        if (in_array($key, SIGNATURE_DATA_KEYS)) {
+        if (in_array($key, SIGNATURE_DATA_KEYS, true)) {
             $signatureData[$key] = $value;
         }
     }
     return $signatureData;
 }
-
 
 define("SIGNATURE_DATA", getSignatureData(PAYLOAD));
 define("VALID_UNTIL", SKA\formatValidUntil("1628717009.0"));

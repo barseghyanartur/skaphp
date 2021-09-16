@@ -1,8 +1,4 @@
 <?php
-/**
- * Sample payload
- */
-
 namespace SKA\Examples;
 
 require_once "src/SKA/core.php";
@@ -20,6 +16,9 @@ use function SKA\unixTimestampToDate;
 use const SKA\DEFAULT_SIGNATURE_PARAM;
 use const SKA\SIGNATURE_LIFETIME;
 
+/**
+ * Sample payload
+ */
 const JSON = <<<EOD
 {
     "order_lines": [{
@@ -143,7 +142,7 @@ const SIGNATURE_DATA_KEYS = array(
 function getSignatureData(array $requestData): array {
     $signatureData = array();
     foreach ($requestData as $key => $value) {
-        if (in_array($key, SIGNATURE_DATA_KEYS)) {
+        if (in_array($key, SIGNATURE_DATA_KEYS, true)) {
             $signatureData[$key] = $value;
         }
     }
