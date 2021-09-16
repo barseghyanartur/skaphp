@@ -218,7 +218,7 @@ print_r($base);
 $base2 = getBase(
     $authUser=AUTH_USER,
     $validUntil,
-    $extra=["1" => "1", "2" => "2"],
+    $extra=["one" => "1", "two" => "2"],
 );
 echo("\n === \n base2 \n === \n");
 print_r($base2);
@@ -257,7 +257,7 @@ $hash3 = makeHash(
     $authUser=AUTH_USER,
     $secretKey=SECRET_KEY,
     $validUntil,
-    $extra=["1"=>"1", "2"=>"2"],
+    $extra=["one"=>"1", "two"=>"2"],
 );
 echo("\n === \n hash3 \n === \n");
 print_r($hash3);
@@ -278,7 +278,7 @@ $signature2 = generateSignature(
     $secretKey=SECRET_KEY,
     $validUntil,
     $lifetime=SIGNATURE_LIFETIME,
-    $extra=["1"=>"1", "2"=>"2"]
+    $extra=["one"=>"1", "two"=>"2"]
 );
 echo("\n === \n signature2 \n === \n");
 print_r($signature2);
@@ -310,7 +310,7 @@ $signatureDict2 = signatureToDict(
     SECRET_KEY,
     $validUntil,
     SIGNATURE_LIFETIME,
-    ["1" => "1", "2" => "2"],
+    ["one" => "1", "two" => "2"],
     DEFAULT_SIGNATURE_PARAM,
     $authUserParam="webshop_id",
 );
