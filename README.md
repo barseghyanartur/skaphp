@@ -39,6 +39,8 @@ Secret Key. It's being checked whether signature is valid and not expired.
 ## Prerequisites
 
 - composer
+- php-json
+- php-mbstring
 
 ## Installation
 
