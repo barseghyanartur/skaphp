@@ -143,6 +143,7 @@ function getSignatureData(array $requestData): array {
 
 
 define("SIGNATURE_DATA", getSignatureData(PAYLOAD));
+define("VALID_UNTIL", SKA\formatValidUntil("1628717009.0"));
 
 /**
  * Tests.
@@ -291,18 +292,244 @@ final class CoreTest extends TestCase
         $signature = SKA\generateSignature(
             AUTH_USER,
             SECRET_KEY,
-            $validUntil,
-            SIGNATURE_LIFETIME,
+            VALID_UNTIL,
+            SKA\SIGNATURE_LIFETIME,
             null
         );
-        const expectedSignature = new Signature(
+        $expectedSignature = new SKA\Signature(
             "WTjN2wPENDW1gCHEVPKz3IXlE0g=",
             "me@example.com",
             "1628717009.0",
-        {}
-    );
+            []
+        );
+        self::assertEquals($signature, $expectedSignature);
+
+        // Signature test case 2
+        $signature2 = SKA\generateSignature(
+            AUTH_USER,
+            SECRET_KEY,
+            VALID_UNTIL,
+            SKA\SIGNATURE_LIFETIME,
+            [1=>"1", 2=>"2"]
+        );
+        $expectedSignature2 = new SKA\Signature(
+            "ZGncnzq0NlcMe2qMDqR02yfonR0=",
+            "me@example.com",
+            "1628717009.0",
+            [1=>"1", 2=>"2"]
+        );
+        self::assertEquals($signature2, $expectedSignature2);
+
+        // Signature test case 3
+        $signature3 = SKA\generateSignature(
+            AUTH_USER,
+            SECRET_KEY,
+            VALID_UNTIL,
+            SKA\SIGNATURE_LIFETIME,
+            SIGNATURE_DATA
+        );
+        $extra3JSON = <<<EOD
+            {
+                "order_lines": [
+                    {
+                        "quantity": 4,
+                        "product_id": "8273401260171",
+                        "product_name": "himself",
+                        "product_description": "Man movement another skill draw great late.",
+                        "product_price_excl_tax": 7685,
+                        "product_price_incl_tax": 8684,
+                        "product_tax_rate_percentage": 13
+                    },
+                    {
+                        "quantity": 5,
+                        "product_id": "6760122207575",
+                        "product_name": "someone",
+                        "product_description": "Including couple happen ago hotel son know list.",
+                        "product_price_excl_tax": 19293,
+                        "product_price_incl_tax": 20064,
+                        "product_tax_rate_percentage": 4
+                    },
+                    {
+                        "quantity": 1,
+                        "product_id": "5014352615527",
+                        "product_name": "able",
+                        "product_description": "Simply reason bring manager with lot.",
+                        "product_price_excl_tax": 39538,
+                        "product_price_incl_tax": 41910,
+                        "product_tax_rate_percentage": 6
+                    },
+                    {
+                        "quantity": 1,
+                        "product_id": "4666517682328",
+                        "product_name": "person",
+                        "product_description": "Arrive government such arm conference program every.",
+                        "product_price_excl_tax": 18794,
+                        "product_price_incl_tax": 18794,
+                        "product_tax_rate_percentage": 0
+                    },
+                    {
+                        "quantity": 2,
+                        "product_id": "3428396033957",
+                        "product_name": "chance",
+                        "product_description": "Ever campaign next store far stop and.",
+                        "product_price_excl_tax": 26894,
+                        "product_price_incl_tax": 29314,
+                        "product_tax_rate_percentage": 9
+                    },
+                    {
+                        "quantity": 4,
+                        "product_id": "4822589619741",
+                        "product_name": "style",
+                        "product_description": "Song any season pick box chance.",
+                        "product_price_excl_tax": 17037,
+                        "product_price_incl_tax": 19422,
+                        "product_tax_rate_percentage": 14
+                    }
+                ],
+                "webshop_id": "4381a041-11cd-43fa-9fb4-c558bac1bd5e",
+                "order_id": "lTAGlTOHtKiBdvRvmhSw",
+                "amount": 491605,
+                "currency": "EUR",
+                "company": {
+                    "name": "Siemens",
+                    "registration_number": "LhkvLTWNTVNxlMKfBruq",
+                    "vat_number": "RNQfPcPtnbDFvQRbJeNJ",
+                    "website": "https://www.nedschroef.com/",
+                    "country": "NL"
+                },
+                "user": {
+                    "first_name": "Noor",
+                    "last_name": "van Praagh",
+                    "email": "juliegoyaerts-van-waderle@gmail.com",
+                    "phone_number": "+31475013353"
+                },
+                "shipping": {
+                    "street": "Femkeboulevard",
+                    "house_number": "7",
+                    "city": "Noord-Sleen",
+                    "postal_code": "1784KL",
+                    "country": "NL"
+                },
+                "billing": {
+                    "street": "Pippasteeg",
+                    "house_number": "35",
+                    "city": "Ospel",
+                    "postal_code": "6385 VA",
+                    "country": "NL"
+                }
+            }
+        EOD;
+        $extra3 = json_decode($extra3JSON, true);
+        $expectedSignature3 = new SKA\Signature(
+            "pHVmnlbzb0hIJ+EWcRhRA3Ajrx8=",
+            "me@example.com",
+            "1628717009.0",
+            $extra3
+        );
+        self::assertEquals($signature3, $expectedSignature3);
     }
 
+    public function testSignatureToDict(): void
+    {
+        // Test case 1
+        $signatureDict = SKA\signatureToDict(
+            PAYLOAD["webshop_id"],
+            SECRET_KEY,
+            VALID_UNTIL,
+            SKA\SIGNATURE_LIFETIME,
+            SIGNATURE_DATA,
+            SKA\DEFAULT_SIGNATURE_PARAM,
+            "webshop_id"
+        );
+        $expectedSignatureDictJSON = <<<EOD
+            {
+                "signature": "+r9u8ztA7oEe9mTGMxKDVJ/8Sec=",
+                "valid_until": "1628717009.0",
+                "extra": "amount,billing,company,currency,order_id,order_lines,shipping,user,webshop_id",
+                "order_lines": [{
+                    "quantity": 4,
+                    "product_id": "8273401260171",
+                    "product_name": "himself",
+                    "product_description": "Man movement another skill draw great late.",
+                    "product_price_excl_tax": 7685,
+                    "product_price_incl_tax": 8684,
+                    "product_tax_rate_percentage": 13
+                }, {
+                    "quantity": 5,
+                    "product_id": "6760122207575",
+                    "product_name": "someone",
+                    "product_description": "Including couple happen ago hotel son know list.",
+                    "product_price_excl_tax": 19293,
+                    "product_price_incl_tax": 20064,
+                    "product_tax_rate_percentage": 4
+                }, {
+                    "quantity": 1,
+                    "product_id": "5014352615527",
+                    "product_name": "able",
+                    "product_description": "Simply reason bring manager with lot.",
+                    "product_price_excl_tax": 39538,
+                    "product_price_incl_tax": 41910,
+                    "product_tax_rate_percentage": 6
+                }, {
+                    "quantity": 1,
+                    "product_id": "4666517682328",
+                    "product_name": "person",
+                    "product_description": "Arrive government such arm conference program every.",
+                    "product_price_excl_tax": 18794,
+                    "product_price_incl_tax": 18794,
+                    "product_tax_rate_percentage": 0
+                }, {
+                    "quantity": 2,
+                    "product_id": "3428396033957",
+                    "product_name": "chance",
+                    "product_description": "Ever campaign next store far stop and.",
+                    "product_price_excl_tax": 26894,
+                    "product_price_incl_tax": 29314,
+                    "product_tax_rate_percentage": 9
+                }, {
+                    "quantity": 4,
+                    "product_id": "4822589619741",
+                    "product_name": "style",
+                    "product_description": "Song any season pick box chance.",
+                    "product_price_excl_tax": 17037,
+                    "product_price_incl_tax": 19422,
+                    "product_tax_rate_percentage": 14
+                }],
+                "webshop_id": "4381a041-11cd-43fa-9fb4-c558bac1bd5e",
+                "order_id": "lTAGlTOHtKiBdvRvmhSw",
+                "amount": 491605,
+                "currency": "EUR",
+                "company": {
+                    "name": "Siemens",
+                    "registration_number": "LhkvLTWNTVNxlMKfBruq",
+                    "vat_number": "RNQfPcPtnbDFvQRbJeNJ",
+                    "website": "https://www.nedschroef.com/",
+                    "country": "NL"
+                },
+                "user": {
+                    "first_name": "Noor",
+                    "last_name": "van Praagh",
+                    "email": "juliegoyaerts-van-waderle@gmail.com",
+                    "phone_number": "+31475013353"
+                },
+                "shipping": {
+                    "street": "Femkeboulevard",
+                    "house_number": "7",
+                    "city": "Noord-Sleen",
+                    "postal_code": "1784KL",
+                    "country": "NL"
+                },
+                "billing": {
+                    "street": "Pippasteeg",
+                    "house_number": "35",
+                    "city": "Ospel",
+                    "postal_code": "6385 VA",
+                    "country": "NL"
+                }
+            }
+        EOD;
+        $expectedSignatureDict = json_decode($expectedSignatureDictJSON, true);
 
-
+        self::assertEquals($signatureDict, $expectedSignatureDict);
+    }
 }
