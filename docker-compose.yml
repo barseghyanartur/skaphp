@@ -1,10 +1,6 @@
 version: '3'
 services:
     php:
-#        image: php:7.4-fpm
         build: .
         volumes:
             - ./:/app
-            - ./src:/src
-            - ./tests:/tests
-            - ./examples:/examples
