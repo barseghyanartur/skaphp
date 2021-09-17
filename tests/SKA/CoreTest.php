@@ -1,4 +1,27 @@
 <?php
+/**
+ * SKA - sign data, using symmetric-key algorithm encryption.
+ *
+ * Lets you easily sign data, using symmetric-key algorithm encryption.
+ * Allows you to validate signed data and identify possible validation
+ * errors. Uses sha/hmac for signature encryption. Comes with shortcut
+ * functions for signing (and validating) dictionaries.
+ *
+ * PHP version > 7.4
+ *
+ * LICENSE: This source file is subject to MIT license
+ * that is available through the world-wide-web at the following URI:
+ * https://opensource.org/licenses/MIT.
+ *
+ * @category   Encryption
+ * @package    SKA
+ * @author     Artur Barseghyan <artur.barseghyan@gmail.com>
+ * @copyright  2021 Artur Barseghyan
+ * @license    https://opensource.org/licenses/MIT MIT license
+ * @version    SVN: $Id$
+ * @link       https://github.com/barseghyanartur/skaphp
+ */
+
 declare(strict_types=1);
 
 namespace SKA\Tests;
