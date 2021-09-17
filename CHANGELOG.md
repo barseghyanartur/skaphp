@@ -13,6 +13,12 @@ major.minor[.revision]
   0.3.4 to 0.4).
 - All backwards incompatible changes are mentioned in this document.
 
+## 0.1.2
+
+2021-09-18
+
+- Add license and author information to the sources.
+
 ## 0.1.1
 
 2021-09-17
