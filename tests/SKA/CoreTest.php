@@ -849,6 +849,20 @@ final class CoreTest extends TestCase
         self::assertNotEmpty($isValidSignature4->errors);
         self::assertContains(SIGNATURE_TIMESTAMP_EXPIRED, $isValidSignature4->errors);
         self::assertNotContains(INVALID_SIGNATURE, $isValidSignature4->errors);
+
+        // Test case 5 - invalid signature as object
+        $isValidSignature4 = SKA\validateSignature(
+            'invalid-signature',
+            $signature2->authUser,
+            SECRET_KEY,
+            $signature2->validUntil,
+            $signature2->extra,
+            true
+        );
+        self::assertFalse($isValidSignature4->result);
+        self::assertNotEmpty($isValidSignature4->errors);
+        self::assertContains(SIGNATURE_TIMESTAMP_EXPIRED, $isValidSignature4->errors);
+        self::assertContains(INVALID_SIGNATURE, $isValidSignature4->errors);
     }
 
     public function testValidateSignedRequestData(): void
