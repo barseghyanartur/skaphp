@@ -823,6 +823,46 @@ final class CoreTest extends TestCase
         );
         self::assertFalse($isValidSignature2);
         self::assertTrue($signature2->isExpired());
+
+        // Test case 3 - valid non-expired signature as object
+        $isValidSignature3 = SKA\validateSignature(
+            $signature->signature,
+            $signature->authUser,
+            SECRET_KEY,
+            $signature->validUntil,
+            $signature->extra,
+            true
+        );
+        self::assertTrue($isValidSignature3->result);
+        self::assertEmpty($isValidSignature3->errors);
+
+        // Test case 4 - expired signature as object
+        $isValidSignature4 = SKA\validateSignature(
+            $signature2->signature,
+            $signature2->authUser,
+            SECRET_KEY,
+            $signature2->validUntil,
+            $signature2->extra,
+            true
+        );
+        self::assertFalse($isValidSignature4->result);
+        self::assertNotEmpty($isValidSignature4->errors);
+        self::assertContains(SIGNATURE_TIMESTAMP_EXPIRED, $isValidSignature4->errors);
+        self::assertNotContains(INVALID_SIGNATURE, $isValidSignature4->errors);
+
+        // Test case 5 - invalid signature as object
+        $isValidSignature4 = SKA\validateSignature(
+            'invalid-signature',
+            $signature2->authUser,
+            SECRET_KEY,
+            $signature2->validUntil,
+            $signature2->extra,
+            true
+        );
+        self::assertFalse($isValidSignature4->result);
+        self::assertNotEmpty($isValidSignature4->errors);
+        self::assertContains(SIGNATURE_TIMESTAMP_EXPIRED, $isValidSignature4->errors);
+        self::assertContains(INVALID_SIGNATURE, $isValidSignature4->errors);
     }
 
     public function testValidateSignedRequestData(): void

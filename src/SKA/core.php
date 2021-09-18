@@ -220,6 +220,73 @@ function extractSignedData(array $data, array $extra): array {
  * *******************************************
  */
 
+class ErrorCode {
+    public int $code;
+    public string $message;
+
+    public function __construct(int $code, string $message)
+    {
+        $this->code = $code;
+        $this->message = $message;
+    }
+
+    public function __toString(): string
+    {
+        return $this->message;
+    }
+}
+
+define("INVALID_SIGNATURE", new ErrorCode(1, "Invalid signature!"));
+define("SIGNATURE_TIMESTAMP_EXPIRED", new ErrorCode(2, "Signature timestamp expired!"));
+
+
+/**
+ * Signature validation result container.
+ *
+ * If signature validation result is True, things like this would work:
+ *  >>> res = SignatureValidationResult(result=True)
+    >>> print bool(res)
+    True
+    >>> res = SignatureValidationResult(
+    >>>     result=False,
+    >>>     reason=[error_codes.INVALID_SIGNATURE,]
+    >>> )
+    >>> print bool(res)
+    False
+ */
+class SignatureValidationResult {
+
+    public bool $result;
+    public array $errors;
+
+    /**
+     * Constructor.
+     *
+     * @param bool $result
+     * @param array $errors
+     */
+    public function __construct(bool $result,array $errors = [])
+    {
+        $this->result = $result;
+        $this->errors = $errors ?? [];
+    }
+
+    public function __toString(): string
+    {
+        return strval($this->result);
+    }
+
+    /**
+     * Human readable message of all errors.
+     *
+     * @return string
+     */
+    public function message(): string
+    {
+        return implode(" ", $this->errors);
+    }
+}
+
 /**
  * Signature.
  */
@@ -273,7 +340,7 @@ class Signature {
  * @param array|null $extra
  * @param bool $returnObject
  * @param string $valueDumper
- * @return bool
+ * @return bool|SignatureValidationResult
  */
 function validateSignature(
     string $signature,
@@ -283,7 +350,8 @@ function validateSignature(
     array $extra = null,
     bool $returnObject = false,
     string $valueDumper = DEFAULT_VALUE_DUMPER
-): bool {
+)
+{
     if (!$extra) {
         $extra = array();
     }
@@ -300,6 +368,16 @@ function validateSignature(
     if (!$returnObject) {
         return $sig->signature === $signature && !$sig->isExpired();
     }
+
+    $result = $sig->signature === $signature && !$sig->isExpired();
+    $errors = [];
+    if ($sig->signature != $signature) {
+        $errors[] = INVALID_SIGNATURE;
+    }
+    if ($sig->isExpired()) {
+        $errors[] = SIGNATURE_TIMESTAMP_EXPIRED;
+    }
+    return new SignatureValidationResult($result, $errors);
 }
 
 /**
