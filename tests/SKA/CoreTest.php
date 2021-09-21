@@ -885,5 +885,65 @@ final class CoreTest extends TestCase
             ]
         );
         self::assertTrue($validationResult);
+        // Test case 2 - expired signature
+        $signatureDict2 = SKA\signatureToDict(
+            PAYLOAD["webshop_id"],
+            SECRET_KEY,
+            SIGNATURE_DATA,
+            [
+                "validUntil" => VALID_UNTIL,
+                "authUserParam" => "webshop_id"
+            ]
+        );
+        $validationResult2 = SKA\validateSignedRequestData(
+            $signatureDict2,
+            SECRET_KEY,
+            [
+                "authUserParam" => "webshop_id"
+            ]
+        );
+        self::assertFalse($validationResult2);
+
+        // Test case 3 - valid non-expired signature as object
+        $validationResult3 = SKA\validateSignedRequestData(
+            $signatureDict,
+            SECRET_KEY,
+            [
+                "authUserParam" => "webshop_id"
+            ],
+            true
+        );
+        self::assertTrue($validationResult3->result);
+        self::assertEmpty($validationResult3->errors);
+
+        // Test case 4 - expired signature as object
+        $validationResult4 = SKA\validateSignedRequestData(
+            $signatureDict2,
+            SECRET_KEY,
+            [
+                "authUserParam" => "webshop_id"
+            ],
+            true
+        );
+        self::assertFalse($validationResult4->result);
+        self::assertNotEmpty($validationResult4->errors);
+        self::assertContains(SIGNATURE_TIMESTAMP_EXPIRED, $validationResult4->errors);
+        self::assertNotContains(INVALID_SIGNATURE, $validationResult4->errors);
+
+        // Test case 5 - invalid signature as object
+        $signatureDict5 = unserialize(serialize($signatureDict2));
+        $signatureDict5[SKA\DEFAULT_SIGNATURE_PARAM] = 'invalid-signature';
+        $validationResult5 = SKA\validateSignedRequestData(
+            $signatureDict5,
+            SECRET_KEY,
+            [
+                "authUserParam" => "webshop_id"
+            ],
+            true
+        );
+        self::assertFalse($validationResult5->result);
+        self::assertNotEmpty($validationResult5->errors);
+        self::assertContains(SIGNATURE_TIMESTAMP_EXPIRED, $validationResult5->errors);
+        self::assertContains(INVALID_SIGNATURE, $validationResult5->errors);
     }
 }
