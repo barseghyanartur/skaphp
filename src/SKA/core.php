@@ -9,7 +9,7 @@ declare(strict_types=1);
  * errors. Uses sha/hmac for signature encryption. Comes with shortcut
  * functions for signing (and validating) dictionaries.
  *
- * PHP version > 7.4
+ * PHP version >= 7.3
  *
  * LICENSE: This source file is subject to MIT license
  * that is available through the world-wide-web at the following URI:
@@ -221,8 +221,15 @@ function extractSignedData(array $data, array $extra): array {
  */
 
 class ErrorCode {
-    public int $code;
-    public string $message;
+    /**
+     * @var int;
+     */
+    public $code;
+
+    /**
+     * @var string;
+     */
+    public $message;
 
     public function __construct(int $code, string $message)
     {
@@ -256,8 +263,15 @@ define("SIGNATURE_TIMESTAMP_EXPIRED", new ErrorCode(2, "Signature timestamp expi
  */
 class SignatureValidationResult {
 
-    public bool $result;
-    public array $errors;
+    /**
+     * @var bool
+     */
+    public $result;
+
+    /**
+     * @var array
+     */
+    public $errors;
 
     /**
      * Constructor.
@@ -291,10 +305,25 @@ class SignatureValidationResult {
  * Signature.
  */
 class Signature {
-    public string $signature;
-    public string $authUser;
-    public string $validUntil;
-    public array $extra;
+    /**
+     * @var string
+     */
+    public $signature;
+
+    /**
+     * @var string
+     */
+    public $authUser;
+
+    /**
+     * @var string|int|float
+     */
+    public $validUntil;
+
+    /**
+     * @var array
+     */
+    public $extra;
 
     /**
      * Constructor.
@@ -393,19 +422,19 @@ class RequestHelper {
     /**
      * @var string
      */
-    public string $signatureParam;
+    public $signatureParam;
     /**
      * @var string
      */
-    public string $authUserParam;
+    public $authUserParam;
     /**
      * @var string
      */
-    public string $validUntilParam;
+    public $validUntilParam;
     /**
      * @var string
      */
-    public string $extraParam;
+    public $extraParam;
 
     /**
      * Constructor.
@@ -451,13 +480,15 @@ class RequestHelper {
      * @param array $data
      * @param string $secretKey
      * @param string $valueDumper
+     * @param bool $returnObject
      * @return bool
      */
     public function validateRequestData(
         array $data,
         string $secretKey,
-        string $valueDumper = DEFAULT_VALUE_DUMPER
-    ): bool
+        string $valueDumper = DEFAULT_VALUE_DUMPER,
+        bool $returnObject = false
+    )
     {
         $signature = $data[$this->signatureParam];
         $authUser = $data[$this->authUserParam];
@@ -475,7 +506,7 @@ class RequestHelper {
             $secretKey,
             $validUntil,
             $extraData,
-            false,
+            $returnObject,
             $valueDumper
         );
     }
@@ -710,6 +741,7 @@ function validateSignedRequestData(
     array $data,
     string $secretKey,
     array $options = [],
+    bool $returnObject = false,
     bool $validate = false,
     bool $failSilently = false
 ) {
@@ -727,5 +759,5 @@ function validateSignedRequestData(
         $extraParam
     );
 
-    return $requestHelper->validateRequestData($data, $secretKey, $valueDumper);
+    return $requestHelper->validateRequestData($data, $secretKey, $valueDumper, $returnObject);
 }
