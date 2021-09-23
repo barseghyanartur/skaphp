@@ -13,6 +13,12 @@ major.minor[.revision]
   0.3.4 to 0.4).
 - All backwards incompatible changes are mentioned in this document.
 
+## 0.1.5
+
+2021-09-23
+
+- Ensure that value formatting is not affected by the locale set.
+
 ## 0.1.4
 
 2021-09-21

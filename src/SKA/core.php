@@ -141,11 +141,6 @@ function sortedURLEncode(array $data, bool $quoted = true, $valueDumper = DEFAUL
         $valueDumper = DEFAULT_VALUE_DUMPER;
     }
     foreach ($orderedData as $key => $value) {
-//        if (is_array($value)) {
-//            $_sorted[] = $key.'='.json_encode($value, JSON_UNESCAPED_SLASHES);
-//        } else {
-//            $_sorted[] = $key.'='.$value;
-//        }
         $_sorted[] = $key.'='.$valueDumper($value);
     }
     $_res = implode("&", $_sorted);
@@ -524,7 +519,7 @@ class RequestHelper {
  */
 function normalizeUnixTimestamp($timestamp): string
 {
-    return sprintf("%01.1f", $timestamp);
+    return sprintf("%01.1F", $timestamp);
 }
 
 /**
