@@ -274,7 +274,7 @@ class SignatureValidationResult {
      * @param bool $result
      * @param array $errors
      */
-    public function __construct(bool $result,array $errors = [])
+    public function __construct(bool $result, array $errors = [])
     {
         $this->result = $result;
         $this->errors = $errors ?? [];

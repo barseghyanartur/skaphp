@@ -1,5 +1,6 @@
 /.build/
 /vendor/
+/htmlcov/
 
 /composer.lock
 /phpstan.neon
