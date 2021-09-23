@@ -13,6 +13,12 @@ major.minor[.revision]
   0.3.4 to 0.4).
 - All backwards incompatible changes are mentioned in this document.
 
+## 0.1.6
+
+2021-09-23
+
+- More tests. Add HTML coverage.
+
 ## 0.1.5
 
 2021-09-23
