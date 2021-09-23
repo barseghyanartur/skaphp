@@ -946,4 +946,27 @@ final class CoreTest extends TestCase
         self::assertContains(SIGNATURE_TIMESTAMP_EXPIRED, $validationResult5->errors);
         self::assertContains(INVALID_SIGNATURE, $validationResult5->errors);
     }
+
+    public function testGenerateSignatureWhenLocaleIsSet(): void
+    {
+        $validUntil = SKA\makeValidUntil();
+        $signature = SKA\generateSignature(
+            AUTH_USER,
+            SECRET_KEY,
+            $validUntil,
+            SKA\SIGNATURE_LIFETIME,
+            PAYLOAD
+        );
+
+        setlocale(LC_ALL, 'nl_NL');
+        $localeAffectedSignature = SKA\generateSignature(
+            AUTH_USER,
+            SECRET_KEY,
+            $validUntil,
+            SKA\SIGNATURE_LIFETIME,
+            PAYLOAD
+        );
+
+        self::assertEquals($signature->signature, $localeAffectedSignature->signature);
+    }
 }
