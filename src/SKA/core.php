@@ -701,7 +701,7 @@ function signatureToDict(
         $signatureParam,
         $authUserParam,
         $validUntilParam,
-        $extraParam,
+        $extraParam
     );
 
     return $requestHelper->signatureToDict($signature);
