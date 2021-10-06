@@ -17,7 +17,7 @@ major.minor[.revision]
 
 2021-10-06
 
-- Assure PHP 7.3 compatibility.
+- Assure PHP 7.2 compatibility.
 - Move `ext-xdebug` to `require-dev`.
 
 ## 0.1.6
