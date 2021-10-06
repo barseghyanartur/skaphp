@@ -13,6 +13,13 @@ major.minor[.revision]
   0.3.4 to 0.4).
 - All backwards incompatible changes are mentioned in this document.
 
+## 0.1.7
+
+2021-10-06
+
+- Assure PHP 7.3 compatibility.
+- Move `ext-xdebug` to `require-dev`.
+
 ## 0.1.6
 
 2021-09-23

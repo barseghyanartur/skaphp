@@ -15,17 +15,17 @@
     "homepage": "https://github.com/barseghyanartur/skaphp",
     "keywords": ["security", "encryption", "data-encryption", "data-hash"],
     "require": {
-        "php": "^7.3 || ~8.0.0",
+        "php": "^7.2 || ~8.0.0",
         "ext-json": "*",
-        "ext-mbstring": "*",
-        "ext-xdebug": "*"
+        "ext-mbstring": "*"
     },
     "require-dev": {
+        "ext-xdebug": "*",
         "phpstan/extension-installer": "^1.1",
         "phpstan/phpstan": "^0.12.91",
         "phpstan/phpstan-phpunit": "^0.12.20",
         "phpstan/phpstan-strict-rules": "^0.12.10",
-        "phpunit/phpunit": "^9.5.6",
+        "phpunit/phpunit": ">=8.0.0",
         "psalm/plugin-phpunit": "^0.16.1",
         "vimeo/psalm": "^4.8.1"
     },
