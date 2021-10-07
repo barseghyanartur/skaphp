@@ -4,6 +4,7 @@
          bootstrap="vendor/autoload.php"
          cacheResultFile=".build/phpunit/phpunit.cache"
          colors="true"
+         verbose="true"
 >
     <testsuites>
         <testsuite name="Tests">
@@ -11,10 +12,18 @@
         </testsuite>
     </testsuites>
 
-    <coverage processUncoveredFiles="true">
-        <include>
+<!-- The following works for PHP == 7.2 -->
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="true">
             <directory suffix=".php">src</directory>
-        </include>
-    </coverage>
+        </whitelist>
+    </filter>
+
+<!-- The following worked for PHP >= 7.3 -->
+<!--    <coverage processUncoveredFiles="true">-->
+<!--        <include>-->
+<!--            <directory suffix=".php">src</directory>-->
+<!--        </include>-->
+<!--    </coverage>-->
 
 </phpunit>
