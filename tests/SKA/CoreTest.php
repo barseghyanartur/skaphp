@@ -7,7 +7,7 @@
  * errors. Uses sha/hmac for signature encryption. Comes with shortcut
  * functions for signing (and validating) dictionaries.
  *
- * PHP version > 7.4
+ * PHP version > 7.2
  *
  * LICENSE: This source file is subject to MIT license
  * that is available through the world-wide-web at the following URI:
