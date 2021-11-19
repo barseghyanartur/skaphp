@@ -297,9 +297,9 @@ class SignatureValidationResult {
 }
 
 /**
- * Signature.
+ * AbstractSignature.
  */
-class Signature {
+abstract class AbstractSignature {
     /**
      * @var string
      */
@@ -352,6 +352,125 @@ class Signature {
         $res = $validUntil > $now;
         return !$res;
     }
+
+    /**
+     * Make hash.
+     *
+     * @param string $authUser
+     * @param string $secretKey
+     * @param string|int|float $validUntil
+     * @param array|null $extra
+     * @param string $valueDumper
+     * @return string
+     */
+    public static abstract function makeHash(
+        string $authUser,
+        string $secretKey,
+        $validUntil,
+        array $extra = null,
+        string $valueDumper = DEFAULT_VALUE_DUMPER
+    ): string;
+}
+
+/**
+ * HMACSHA1Signature.
+ */
+class HMACSHA1Signature extends AbstractSignature {
+
+    /**
+     * Make hash.
+     *
+     * @param string $authUser
+     * @param string $secretKey
+     * @param string|int|float $validUntil
+     * @param array|null $extra
+     * @param string $valueDumper
+     * @return string
+     */
+    public static function makeHash(
+        string $authUser,
+        string $secretKey,
+        $validUntil,
+        array $extra = null,
+        string $valueDumper = DEFAULT_VALUE_DUMPER
+    ): string {
+        return makeHash(
+            $authUser,
+            $secretKey,
+            $validUntil,
+            $extra,
+            $valueDumper,
+            "sha1"
+        );
+    }
+}
+
+class_alias("SKA\HMACSHA1Signature", "SKA\Signature");  // For backwards compatibility
+
+/**
+ * HMACSHA256Signature.
+ */
+class HMACSHA256Signature extends AbstractSignature {
+
+    /**
+     * Make hash.
+     *
+     * @param string $authUser
+     * @param string $secretKey
+     * @param string|int|float $validUntil
+     * @param array|null $extra
+     * @param string $valueDumper
+     * @return string
+     */
+    public static function makeHash(
+        string $authUser,
+        string $secretKey,
+        $validUntil,
+        array $extra = null,
+        string $valueDumper = DEFAULT_VALUE_DUMPER
+    ): string {
+        return makeHash(
+            $authUser,
+            $secretKey,
+            $validUntil,
+            $extra,
+            $valueDumper,
+            "sha256"
+        );
+    }
+}
+
+/**
+ * HMACSHA512Signature.
+ */
+class HMACSHA512Signature extends AbstractSignature {
+
+    /**
+     * Make hash.
+     *
+     * @param string $authUser
+     * @param string $secretKey
+     * @param string|int|float $validUntil
+     * @param array|null $extra
+     * @param string $valueDumper
+     * @return string
+     */
+    public static function makeHash(
+        string $authUser,
+        string $secretKey,
+        $validUntil,
+        array $extra = null,
+        string $valueDumper = DEFAULT_VALUE_DUMPER
+    ): string {
+        return makeHash(
+            $authUser,
+            $secretKey,
+            $validUntil,
+            $extra,
+            $valueDumper,
+            "sha512"
+        );
+    }
 }
 
 /**
@@ -364,6 +483,7 @@ class Signature {
  * @param array|null $extra
  * @param bool $returnObject
  * @param string $valueDumper
+ * @param string $signatureCls
  * @return bool|SignatureValidationResult
  */
 function validateSignature(
@@ -373,7 +493,8 @@ function validateSignature(
     $validUntil,
     array $extra = null,
     bool $returnObject = false,
-    string $valueDumper = DEFAULT_VALUE_DUMPER
+    string $valueDumper = DEFAULT_VALUE_DUMPER,
+    string $signatureCls = Signature::class
 )
 {
     if (!$extra) {
@@ -386,7 +507,8 @@ function validateSignature(
         $validUntil,
         SIGNATURE_LIFETIME,
         $extra,
-        $valueDumper
+        $valueDumper,
+        $signatureCls
     );
 
     if (!$returnObject) {
@@ -418,18 +540,26 @@ class RequestHelper {
      * @var string
      */
     public $signatureParam;
+
     /**
      * @var string
      */
     public $authUserParam;
+
     /**
      * @var string
      */
     public $validUntilParam;
+
     /**
      * @var string
      */
     public $extraParam;
+
+    /**
+     * @var string
+     */
+    public $signatureCls;
 
     /**
      * Constructor.
@@ -438,26 +568,29 @@ class RequestHelper {
      * @param string $authUserParam
      * @param string $validUntilParam
      * @param string $extraParam
+     * @param string $signatureCls
      */
     public function __construct(
         string $signatureParam = DEFAULT_SIGNATURE_PARAM,
         string $authUserParam = DEFAULT_AUTH_USER_PARAM,
         string $validUntilParam = DEFAULT_VALID_UNTIL_PARAM,
-        string $extraParam = DEFAULT_EXTRA_PARAM
+        string $extraParam = DEFAULT_EXTRA_PARAM,
+        string $signatureCls = Signature::class
     ) {
         $this->signatureParam = $signatureParam;
         $this->authUserParam = $authUserParam;
         $this->validUntilParam = $validUntilParam;
         $this->extraParam = $extraParam;
+        $this->signatureCls = $signatureCls;
     }
 
     /**
      * Signature to dict.
      *
-     * @param Signature $signature
+     * @param AbstractSignature $signature
      * @return array
      */
-    public function signatureToDict(Signature $signature): array
+    public function signatureToDict(AbstractSignature $signature): array
     {
         $data = array();
 
@@ -502,7 +635,8 @@ class RequestHelper {
             $validUntil,
             $extraData,
             $returnObject,
-            $valueDumper
+            $valueDumper,
+            $this->signatureCls
         );
     }
 }
@@ -573,7 +707,9 @@ function getBase(
  * @param string $authUser
  * @param string $secretKey
  * @param string|int|float $validUntil
- * @param array|null extra
+ * @param array|null $extra
+ * @param string $valueDumper
+ * @param string $algorithm
  * @return string
  */
 function makeHash(
@@ -581,7 +717,8 @@ function makeHash(
     string $secretKey,
     $validUntil = null,
     array $extra = null,
-    string $valueDumper = DEFAULT_VALUE_DUMPER
+    string $valueDumper = DEFAULT_VALUE_DUMPER,
+    string $algorithm = "sha1"
 ): string
 {
     if (is_null($extra)) {
@@ -589,7 +726,7 @@ function makeHash(
     }
 
     $_base = getBase($authUser, $validUntil, $extra, $valueDumper);
-    return hash_hmac("sha1", $_base, $secretKey, true);
+    return hash_hmac($algorithm, $_base, $secretKey, true);
 }
 
 /**
@@ -600,7 +737,8 @@ function makeHash(
  * @param string|int|float $validUntil
  * @param int $lifetime
  * @param array|null $extra
- * @return null|Signature
+ * @param string $signatureCls
+ * @return null|AbstractSignature
  */
 function generateSignature(
     string $authUser,
@@ -608,8 +746,9 @@ function generateSignature(
     $validUntil = null,
     int $lifetime = SIGNATURE_LIFETIME,
     array $extra = null,
-    string $valueDumper = DEFAULT_VALUE_DUMPER
-): ?Signature
+    string $valueDumper = DEFAULT_VALUE_DUMPER,
+    string $signatureCls = Signature::class
+): ?AbstractSignature
 {
     if (is_null($extra)) {
         $extra = array();
@@ -626,10 +765,10 @@ function generateSignature(
     }
     $validUntil = formatValidUntil($validUntil);
 
-    $hash = makeHash($authUser, $secretKey, $validUntil, $extra, $valueDumper);
+    $hash = $signatureCls::makeHash($authUser, $secretKey, $validUntil, $extra, $valueDumper);
     $signature = base64_encode($hash);
 
-    return new Signature($signature, $authUser, $validUntil, $extra);
+    return new $signatureCls($signature, $authUser, $validUntil, $extra);
 }
 
 /**
@@ -658,6 +797,7 @@ function getSignatureToDictDefaults(int $lifetime = null): array
         "validUntilParam" => DEFAULT_VALID_UNTIL_PARAM,
         "extraParam" => DEFAULT_EXTRA_PARAM,
         "valueDumper" => DEFAULT_VALUE_DUMPER,
+        "signatureCls" => Signature::class,
     ];
 }
 
@@ -687,6 +827,7 @@ function signatureToDict(
     $validUntilParam = $options["validUntilParam"];
     $extraParam = $options["extraParam"];
     $valueDumper = $options["valueDumper"];
+    $signatureCls = $options["signatureCls"];
 
     $signature = generateSignature(
         $authUser,
@@ -694,7 +835,8 @@ function signatureToDict(
         $validUntil,
         $lifetime,
         $extra,
-        $valueDumper
+        $valueDumper,
+        $signatureCls
     );
 
     $requestHelper = new RequestHelper(
@@ -715,12 +857,14 @@ function signatureToDict(
 //    * @param string $validUntilParam
 //    * @param string $extraParam
 //    * @param string $valueDumper
+//    * @param string $signatureCls
 const VALIDATE_SIGNED_REQUEST_DATA_DEFAULTS = [
     "signatureParam" => DEFAULT_SIGNATURE_PARAM,
     "authUserParam" => DEFAULT_AUTH_USER_PARAM,
     "validUntilParam" => DEFAULT_VALID_UNTIL_PARAM,
     "extraParam" => DEFAULT_EXTRA_PARAM,
     "valueDumper" => DEFAULT_VALUE_DUMPER,
+    "signatureCls" => HMACSHA1Signature::class
 ];
 
 /**
@@ -746,12 +890,14 @@ function validateSignedRequestData(
     $validUntilParam = $options["validUntilParam"];
     $extraParam = $options["extraParam"];
     $valueDumper = $options["valueDumper"];
+    $signatureCls = $options["signatureCls"];
 
     $requestHelper = new RequestHelper(
         $signatureParam,
         $authUserParam,
         $validUntilParam,
-        $extraParam
+        $extraParam,
+        $signatureCls
     );
 
     return $requestHelper->validateRequestData($data, $secretKey, $valueDumper, $returnObject);

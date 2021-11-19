@@ -489,6 +489,185 @@ EOD;
             $extra3
         );
         self::assertEquals($signature3, $expectedSignature3);
+
+        // Integration tests
+        // Signature test case 3a
+        $signature3a = SKA\generateSignature(
+            AUTH_USER,
+            SECRET_KEY,
+            VALID_UNTIL,
+            SKA\SIGNATURE_LIFETIME,
+            ["one" => "â"]
+        );
+        $expectedSignature3a = new SKA\Signature(
+            "dlT2WO/jYq7+xcvDEUkCnNW5TxA=",
+            "me@example.com",
+            "1628717009.0",
+            ["one" => "â"]
+        );
+        self::assertEquals($signature3a, $expectedSignature3a);
+
+        // Signature test case 4
+        $signature4 = SKA\generateSignature(
+            AUTH_USER,
+            SECRET_KEY,
+            VALID_UNTIL,
+            SKA\SIGNATURE_LIFETIME,
+            ["one" => ["value" => "â"]]
+        );
+        $expectedSignature4 = new SKA\Signature(
+            "+pA63D4EMF2pcfIlE/dYXyNkhx4=",
+            "me@example.com",
+            "1628717009.0",
+            ["one" => ["value" => "â"]]
+        );
+        self::assertEquals($signature4, $expectedSignature4);
+
+        // SHA256 signatures
+        // Signature test case 11
+        $signature11 = SKA\generateSignature(
+            AUTH_USER,
+            SECRET_KEY,
+            VALID_UNTIL,
+            SKA\SIGNATURE_LIFETIME,
+            null,
+            SKA\DEFAULT_VALUE_DUMPER,
+            SKA\HMACSHA256Signature::class
+        );
+        $expectedSignature11 = new SKA\HMACSHA256Signature(
+            "EZ7uXeeopIxK3wL62J/9tKPXoGmNk9V3KHGgwge9/ek=",
+            "me@example.com",
+            "1628717009.0",
+            []
+        );
+        self::assertEquals($signature11, $expectedSignature11);
+
+        // Signature test case 12
+        $signature12 = SKA\generateSignature(
+            AUTH_USER,
+            SECRET_KEY,
+            VALID_UNTIL,
+            SKA\SIGNATURE_LIFETIME,
+            ["one" => "1", "two" => "2"],
+            SKA\DEFAULT_VALUE_DUMPER,
+            SKA\HMACSHA256Signature::class
+        );
+        $expectedSignature12 = new SKA\HMACSHA256Signature(
+            "Cl90LfQ2L3DW2MAhZriqCfEisPdL+1aHA/M0GPc1Yr4=",
+            "me@example.com",
+            "1628717009.0",
+            ["one" => "1", "two" => "2"]
+        );
+        self::assertEquals($signature12, $expectedSignature12);
+
+        // Signature test case 13
+        $signature13 = SKA\generateSignature(
+            AUTH_USER,
+            SECRET_KEY,
+            VALID_UNTIL,
+            SKA\SIGNATURE_LIFETIME,
+            ["one" => "â"],
+            SKA\DEFAULT_VALUE_DUMPER,
+            SKA\HMACSHA256Signature::class
+        );
+        $expectedSignature13 = new SKA\HMACSHA256Signature(
+            "9UpLTlFgEbCJ2C4/gC4eDogn0JiuMzo7osbMEOejwkQ=",
+            "me@example.com",
+            "1628717009.0",
+            ["one" => "â"]
+        );
+        self::assertEquals($signature13, $expectedSignature13);
+
+        // Signature test case 14
+        $signature14 = SKA\generateSignature(
+            AUTH_USER,
+            SECRET_KEY,
+            VALID_UNTIL,
+            SKA\SIGNATURE_LIFETIME,
+            ["one" => ["value" => "â"]],
+            SKA\DEFAULT_VALUE_DUMPER,
+            SKA\HMACSHA256Signature::class
+        );
+        $expectedSignature14 = new SKA\HMACSHA256Signature(
+            "9Tg3PdJYm/2tKZtVU0F/5T6TtL39Rwy4Uniq36ZClMY=",
+            "me@example.com",
+            "1628717009.0",
+            ["one" => ["value" => "â"]]
+        );
+        self::assertEquals($signature14, $expectedSignature14);
+
+        // SHA512 signatures
+        // Signature test case 21
+        $signature21 = SKA\generateSignature(
+            AUTH_USER,
+            SECRET_KEY,
+            VALID_UNTIL,
+            SKA\SIGNATURE_LIFETIME,
+            null,
+            SKA\DEFAULT_VALUE_DUMPER,
+            SKA\HMACSHA512Signature::class
+        );
+        $expectedSignature21 = new SKA\HMACSHA512Signature(
+            "7QcInLFxLrv1TeZZY4EXbAc1YguBlcjmYfFe5J+FH4TAOquSBZvKwYLSQCS4VVmdhDDU1h1zVlPDc4MAW6SHGQ==",
+            "me@example.com",
+            "1628717009.0",
+            []
+        );
+        self::assertEquals($signature21, $expectedSignature21);
+
+        // Signature test case 22
+        $signature22 = SKA\generateSignature(
+            AUTH_USER,
+            SECRET_KEY,
+            VALID_UNTIL,
+            SKA\SIGNATURE_LIFETIME,
+            ["one" => "1", "two" => "2"],
+            SKA\DEFAULT_VALUE_DUMPER,
+            SKA\HMACSHA512Signature::class
+        );
+        $expectedSignature22 = new SKA\HMACSHA512Signature(
+            "+Bm5xtd3Cl+7VV0RM6H14z68M8vWuMP168m3UsXLP1jHTTQCg3mXxTncZ9a57AoQefh/qNmDdnD5AmFYGzJ+PQ==",
+            "me@example.com",
+            "1628717009.0",
+            ["one" => "1", "two" => "2"]
+        );
+        self::assertEquals($signature22, $expectedSignature22);
+
+        // Signature test case 23
+        $signature23 = SKA\generateSignature(
+            AUTH_USER,
+            SECRET_KEY,
+            VALID_UNTIL,
+            SKA\SIGNATURE_LIFETIME,
+            ["one" => "â"],
+            SKA\DEFAULT_VALUE_DUMPER,
+            SKA\HMACSHA512Signature::class
+        );
+        $expectedSignature23 = new SKA\HMACSHA512Signature(
+            "yockrWxDncGJ2/HMEi/ma/auEmv8xlIMm5U50CuTFYSKbzrgNPh4OXgax/s2d96+paaLagwmnZK1+xUGHeArXw==",
+            "me@example.com",
+            "1628717009.0",
+            ["one" => "â"]
+        );
+        self::assertEquals($signature23, $expectedSignature23);
+
+        // Signature test case 24
+        $signature24 = SKA\generateSignature(
+            AUTH_USER,
+            SECRET_KEY,
+            VALID_UNTIL,
+            SKA\SIGNATURE_LIFETIME,
+            ["one" => ["value" => "â"]],
+            SKA\DEFAULT_VALUE_DUMPER,
+            SKA\HMACSHA512Signature::class
+        );
+        $expectedSignature24 = new SKA\HMACSHA512Signature(
+            "OlFZzu/SlBQYWny3CVvP7ghiL6X8G4r/yS9yNl8N+9b1arae3AkMLCp+0MuLs2sp8qdM3j+a7MYdCQCBSOnAoQ==",
+            "me@example.com",
+            "1628717009.0",
+            ["one" => ["value" => "â"]]
+        );
+        self::assertEquals($signature24, $expectedSignature24);
     }
 
     public function testSignatureToDict(): void
@@ -936,6 +1115,103 @@ EOT;
             $signature->extra
         );
         self::assertTrue($isValidSignature);
+
+        // Test HMACSHA256Signature
+        // Test case 21 - valid non-expired signature
+        $signature21 = SKA\generateSignature(
+            AUTH_USER,
+            SECRET_KEY,
+            SKA\makeValidUntil(),
+            SKA\SIGNATURE_LIFETIME,
+            null,
+            SKA\JAVASCRIPT_VALUE_DUMPER,
+            SKA\HMACSHA256Signature::class
+        );
+        self::assertNotNull($signature);
+        $isValidSignature21 = SKA\validateSignature(
+            $signature21->signature,
+            $signature21->authUser,
+            SECRET_KEY,
+            $signature21->validUntil,
+            $signature21->extra,
+            false,
+            SKA\JAVASCRIPT_VALUE_DUMPER,
+            SKA\HMACSHA256Signature::class
+        );
+        self::assertTrue($isValidSignature21);
+
+        // Test case 22 - expired signature
+        $signature22 = SKA\generateSignature(
+            AUTH_USER,
+            SECRET_KEY,
+            VALID_UNTIL,
+            SKA\SIGNATURE_LIFETIME,
+            null,
+            SKA\JAVASCRIPT_VALUE_DUMPER,
+            SKA\HMACSHA256Signature::class
+        );
+        self::assertNotNull($signature22);
+        $isValidSignature22 = SKA\validateSignature(
+            $signature22->signature,
+            $signature22->authUser,
+            SECRET_KEY,
+            $signature22->validUntil,
+            $signature22->extra,
+            false,
+            SKA\JAVASCRIPT_VALUE_DUMPER,
+            SKA\HMACSHA256Signature::class
+        );
+        self::assertFalse($isValidSignature22);
+        self::assertTrue($signature22->isExpired());
+
+
+        // Test HMACSHA512Signature
+        // Test case 31 - valid non-expired signature
+        $signature31 = SKA\generateSignature(
+            AUTH_USER,
+            SECRET_KEY,
+            SKA\makeValidUntil(),
+            SKA\SIGNATURE_LIFETIME,
+            null,
+            SKA\JAVASCRIPT_VALUE_DUMPER,
+            SKA\HMACSHA512Signature::class
+        );
+        self::assertNotNull($signature);
+        $isValidSignature31 = SKA\validateSignature(
+            $signature31->signature,
+            $signature31->authUser,
+            SECRET_KEY,
+            $signature31->validUntil,
+            $signature31->extra,
+            false,
+            SKA\JAVASCRIPT_VALUE_DUMPER,
+            SKA\HMACSHA512Signature::class
+        );
+        self::assertTrue($isValidSignature31);
+
+        // Test case 32 - expired signature
+        $signature32 = SKA\generateSignature(
+            AUTH_USER,
+            SECRET_KEY,
+            VALID_UNTIL,
+            SKA\SIGNATURE_LIFETIME,
+            null,
+            SKA\JAVASCRIPT_VALUE_DUMPER,
+            SKA\HMACSHA512Signature::class
+        );
+        self::assertNotNull($signature32);
+        $isValidSignature32 = SKA\validateSignature(
+            $signature32->signature,
+            $signature32->authUser,
+            SECRET_KEY,
+            $signature32->validUntil,
+            $signature32->extra,
+            false,
+            SKA\JAVASCRIPT_VALUE_DUMPER,
+            SKA\HMACSHA512Signature::class
+        );
+        self::assertFalse($isValidSignature32);
+        self::assertTrue($signature32->isExpired());
     }
 
     public function testValidateSignedRequestData(): void
