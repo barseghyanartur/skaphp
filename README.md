@@ -42,6 +42,20 @@ Secret Key. It's being checked whether signature is valid and not expired.
 - php-json
 - php-mbstring
 
+
+## Eco-system
+
+Need ``ska`` for other languages? Check the following affiliated projects:
+
+- [ska](https://github.com/barseghyanartur/ska): ``ska`` implementation
+  for Python. This was the first implementation from which current project
+  originated.
+- [skajs](https://github.com/barseghyanartur/skajs): ``ska`` implementation
+  for NodeJS (both CommonJS and ESM are supported, Node >= 14).
+
+Generated signatures are intercompatible between Python, NodeJS and PHP
+implementations.
+
 ## Installation
 
 Latest stable version from composer registry:

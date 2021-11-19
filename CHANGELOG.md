@@ -13,6 +13,12 @@ major.minor[.revision]
   0.3.4 to 0.4).
 - All backwards incompatible changes are mentioned in this document.
 
+## 0.1.8
+
+2021-11-19
+
+- Added more signatures (`HMACSHA256Signature`, `HMACSHA512Signature`).
+
 ## 0.1.7
 
 2021-10-06
