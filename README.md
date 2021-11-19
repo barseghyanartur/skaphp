@@ -7,7 +7,7 @@ validating) dictionaries (associative arrays).
 
 [![Packagist version](https://img.shields.io/packagist/v/barseghyanartur/ska.svg?logo=php&logoColor=white&style=flat-square)](https://packagist.org/packages/barseghyanartur/ska)
 [![Supported PHP versions](https://img.shields.io/packagist/php-v/barseghyanartur/ska.svg?logo=php&logoColor=white&style=flat-square)](https://packagist.org/packages/barseghyanartur/ska)
-[![Build Status](https://github.com/barseghyanartur/skaphp/actions/workflows/tests.yml/badge.svg)](https://github.com/barseghyanartur/skajs/actions)
+[![Build Status](https://github.com/barseghyanartur/skaphp/actions/workflows/tests.yml/badge.svg)](https://github.com/barseghyanartur/skaphp/actions)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/barseghyanartur/skaphp/#License)
 
 ## Key concepts
